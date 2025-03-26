@@ -1,0 +1,31 @@
+---
+title: "Exploratory Data Analysis"
+format: html
+editor: visual
+---
+
+## Exploratory Data Analysis Report
+
+#### Outcome Variable:
+
+-   Primary Outcome Variable: Total points at the end of the season.
+
+-   Why? It directly correlates to a team's success in the league standings. The more points equals the higher you are out of the 20 teams.
+
+-   Expectations: We expect that teams that accumulate more points in the first 15 matches along with higher expected goals for (xG) and a lower expected goals against (xGA) are more likely to finish higher in the standings. However, we need to see whether these early strong performances directly relate to a higher finish at the end of the season.
+
+#### Explanatory Variables:
+
+-   Expected Goals (xG): this shows a teams expected goals per game. We will be able to see if a team is over-performing meaning they have a lower expected goals but more goals and if a team is under-performing with a higher expected goals but with less actual goals.
+
+-   Real Goals Scored (G): The actual amount of goals the team has scored.
+
+-   Goals Against (GA): The amount a team conceded per game.
+
+-   Goal Differential: The ratio of goals for and against. Usually a team with a very high goal differential finished higher up on the table. This will be a good variable to look at for the first 15 games of the season.
+
+```{r}
+library(readr)
+PL19_20 <- read_csv("data/PL19-20.csv")
+
+```
