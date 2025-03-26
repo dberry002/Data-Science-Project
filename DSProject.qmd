@@ -1,0 +1,177 @@
+---
+title: "Project Proposal"
+author: "Daniel and Aiden"
+format: pdf
+editor: visual
+---
+
+## Project Proposal
+
+Below will be two data sets that we will choose from to move on with for our Data Science Project.
+
+### Introduction and Data
+
+```{r}
+library(reticulate)
+library(readr)
+library(rvest)
+library(tidyverse)
+
+
+# Here I have loaded in Per Game NBA stats from the previous season (2023-24)
+
+url <- "https://www.basketball-reference.com/leagues/NBA_2024_per_game.html"
+
+page <- read_html(url)
+
+NBA_table <- page %>%
+  html_node("#per_game_stats") %>%
+  html_table(fill = TRUE)
+
+head(NBA_table)
+
+
+```
+
+```         
+```
+
+#### Introduction to NBA Data Set:
+
+The data provided on the Basketball-Reference page consists of per-game stats for all NBA players during the 2023-24 season.
+
+-   **Source of the Data:**
+
+    The data comes from Basketball-Reference. It is a well-known sports statistics website that compiles data from the official NBA box scores and other publicly available sources. The link in the code chunk above takes you directly to the exact page we will be using.
+
+-   **When and How it was Collected:**
+
+    The data they use is collected throughout the NBA season, where they update it daily based on completed games. Its primary source being from the official NBA game reports and box scores. After Basketball-Reference gathers all the data it processes and organizes it into a structured table for public use.
+
+-   **Cases:**
+
+    Each row in the data set represents an individual NBA player's per-game statistical performance for the 2023-24 season. Moreover, it is ranked from top to bottom based on the points per game stat. This being a players average points per game throughout the entire season.
+
+-   **Relevant Variables:**
+
+    This data set contains many variables that represent each players per game statistical performance.
+
+    -   Player: Name of the player
+
+    -   Pos: Position
+
+    -   Tm: Team
+
+    -   FG, FGA, FG%: Field Goals Made, attempted, and percentage
+
+    -   3P, 3PA, 3P%: Three-point shots made, attempted, and percentage
+
+    -   FT, FTA, FT%: Free throws made, attempted, and percentage
+
+    -   RED, AST, STL, BLK, TOV, PTS: Rebounds, assists, steals, blocks, turnovers, and points per game.
+
+#### Research Questions:
+
+One of the most, if not the most, important statistic in a basketball game is the player's ability to score and finding certain variables or factors that can play a role in determining a players points per game can provide insight into a player's performance. So for this project we are interested in finding the key indicators that predict a players PPG. Our goal will be to use shooting efficiency, shot volume, and other relevant variables listed above to create a predictive model. We expect that the historical field goal attempts and efficiency will be the strongest predictors for the future/overall PPG. We believe this is the case as player's that shoot at a higher volume or more efficiently than the average, will tend to have a higher PPG. Furthermore an aspect we are interested in is the effect that 3 point shooting will have on future PPG as the modern NBA has a higher emphasis on this aspect of the game.
+
+## Data Set 2: Premier League Soccer
+
+```{r}
+
+url <- "https://fbref.com/en/comps/9/2023-2024/2023-2024-Premier-League-Stats"
+
+page <- read_html(url)
+
+premier_league_table <- page %>%
+  html_element("table") %>%  # Selects the first table
+  html_table(fill = TRUE) 
+
+head(premier_league_table)
+```
+
+#### Introduction to Premier League Data Set:
+
+The data provided on the fbref page consists of stats for all 20 teams during the 2023-24 Premier League Season.
+
+-   **Source of the Data:**
+
+    The data comes from FBRef, a sport statistics website that compiles soccer data from official league reports, and match play logs. It also uses other publicly available sources like StatsBomb or Opta to gather its data.
+
+-   **When and How it was Collected:**
+
+    The data set is collected throughout the 2023-24 Premier League Season, with updates to the table after every match. The data from the table is taken from official match reports, player tracking data, and performance statistics recorded from other companies like Opta. As FBRef gathers its data it presents it in these structured tables.
+
+-   **Cases:**
+
+    Each row in the data set represents a team's aggregated performance stats for the 2023-24 seasons. Similarly to the NBA data set it is ranked from top to bottom based on where you finished in the table.
+
+-   **Relevant Variables:**
+
+    This data set contains many variables that represent each teams stats based on the entirety of the 2023-24 season.
+
+    -   Squad: Team Name
+
+    -   W, L, D: Win, Loss, Draw
+
+    -   GF, GA, GD: Goals For, Against, and Differential
+
+    -   xG, XGA, XGD: Expected Goals, Goals Against, and Goal Differential
+
+    -   Pts: Total Points, 3 for a win, 1 for a Draw, and 0 for a Loss.
+
+#### Research Questions:
+
+Early-season performance in soccer can be highly predictive of a team's final league standing. However what metrics or variables that determine the long term success is what we want to study. For this project we aim to look at a decade plus of Premier League team data, focusing on the first 15 fixtures of each season to predict their final league standings. We will use the indicators listed above to forecast what their total points at the end of season and which predictors were the strongest. We expect XG to help identify teams that are over performing or under performing relative to their actual goals as a strong predictor for early on in the season.
+
+Possible Problems when gathering data:
+
+1.  Hard to find just first 15 games so might have to do just first half which is 19 games.
+
+2.  The statistic expected goals was not widely used in 2010 and 2011 so either will have to start the training data when it was brought up or go without those higher level statistics.
+
+## Exploratory Data Analysis Report
+
+#### Outcome Variable:
+
+-   Primary Outcome Variable: Total points at the end of the season.
+
+-   Why? It directly correlates to a team's success in the league standings. The more points equals the higher you are out of the 20 teams.
+
+-   Expectations: We expect that teams that accumulate more points in the first 15 matches along with higher expected goals for (xG) and a lower expected goals against (xGA) are more likely to finish higher in the standings. However, we need to see whether these early strong performances directly relate to a higher finish at the end of the season.
+
+#### Explanatory Variables:
+
+-   Expected Goals (xG): this shows a teams expected goals per game. We will be able to see if a team is over-performing meaning they have a lower expected goals but more goals and if a team is under-performing with a higher expected goals but with less actual goals.
+
+-   Real Goals Scored (G): The actual amount of goals the team has scored.
+
+-   Goals Against (GA): The amount a team conceded per game.
+
+-   Goal Differential: The ratio of goals for and against. Usually a team with a very high goal differential finished higher up on the table. This will be a good variable to look at for the first 15 games of the season.
+
+```{r}
+library(rvest)
+library(tidyverse)
+
+url <- "https://fbref.com/en/comps/9/Premier-League-Stats"
+
+# Read the webpage
+page <- read_html(url)
+
+# Extract the table
+league_table <- page %>%
+  html_element("table.stats_table") %>% # Selects the league table
+  html_table()
+
+# Convert to a clean dataframe
+league_table <- as.data.frame(league_table)
+
+# View the first few rows
+head(league_table)
+
+```
+
+Possible websites to gather the data:\
+1. <https://1x2stats.com/en-us/ENG/2024/Premier-League/table/first-half/?da=2024-08-16&a=2024-12-09>
+
+2\.
