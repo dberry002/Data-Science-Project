@@ -16,16 +16,48 @@ editor: visual
 
 #### Explanatory Variables:
 
--   Expected Goals (xG): this shows a teams expected goals per game. We will be able to see if a team is over-performing meaning they have a lower expected goals but more goals and if a team is under-performing with a higher expected goals but with less actual goals.
-
 -   Real Goals Scored (G): The actual amount of goals the team has scored.
 
 -   Goals Against (GA): The amount a team conceded per game.
 
--   Goal Differential: The ratio of goals for and against. Usually a team with a very high goal differential finished higher up on the table. This will be a good variable to look at for the first 15 games of the season.
+-   Goals For (GF)
+
+-   Goals Against Per Match (GAPM)
+
+-   Goals Per Match (GPM)
+
+-   Wins (W)
+
+-   Draws (D)
+
+-   Losses (L)
+
+-   Goal Differential (Dif): The ratio of goals for and against. Usually a team with a very high goal differential finished higher up on the table. This will be a good variable to look at for the first 15 games of the season.
 
 ```{r}
 library(readr)
-PL19_20 <- read_csv("data/PL19-20.csv")
-
+PL19_20 <- read_csv("PL19-20.csv")
+head(PL19_20)
 ```
+
+#### Data Wrangling and Transformation
+
+**Initial Problems:**
+
+We came across an initial problem of finding a multiple data sets that would allow us to move further with out research questions. More specifically:
+
+1.  We will be going back many years so data sets change from year to year and what they offer will also change. In more recent years there are more in-depth tables describing the league while in years like 2015 they aren't as descriptive.
+
+    1.  **Solution:** We are going to bring the years being used for the training data to more present seasons. Starting from the 2019-2020 season until the 2023-2024 will give us a good amount of data in order to accurately predict the final standings.
+
+2.  We originally said 15 games but it makes more sense to just do halfway through the season which is 19 games and this data seems to be more readily available.
+
+    1.  **Solution:** We were able to find data tables online that give information halfway through the season for each year we are going to use.
+
+**Data Cleaning and Variable Creation**
+
+For these specific data sets there were no missing information but there were a few things we had to add and change. First off, to pull these data sets into RStudio we copied them into excel, saved them as a csv file, and then uploaded them to our qmd file.
+
+1.  Getting rid of the logo column. There was a column in the data set that just consisted of the logo for each team so we deleted that.
+2.  Changed Column names to something more readable. For example, Goal differentials was taken down in this format originally: 48:22, meaning a team scored 48 and let in 22 goals. We changed it to two different columns GF and GA that has the first number in GF and the second number in GA. Then in a column name Diff we have the differential of those two.
+3.  We added a few columns to make our data more specific. These include the GF, GA, GPM, and GAPM. The last two standing for Goals Per Match and Goals Against Per Match.
