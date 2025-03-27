@@ -74,3 +74,43 @@ For these specific data sets there was no missing information but there were a f
 1.  Getting rid of the logo column. There was a column in the data set that just consisted of the logo for each team so we deleted that.
 2.  Changed Column names to something more readable. For example, Goal differentials was taken down in this format originally: 48:22, meaning a team scored 48 and let in 22 goals. We changed it to two different columns GF and GA that has the first number in GF and the second number in GA. Then in a column name Diff we have the differential of those two.
 3.  We added a few columns to make our data more specific. These include the GF, GA, GPM, and GAPM. The last two standing for Goals Per Match and Goals Against Per Match.
+
+#### Data Frame Creation
+
+```{r}
+# Load required libraries
+library(readr)
+library(dplyr)
+
+# Here I am adding a season column to distinguish between each year. 
+PL19_20$Season <- "2019-2020"
+PL20_21$Season <- "2020-2021"
+PL21_22$Season <- "2021-2022"
+PL22_23$Season <- "2022-2023"
+PL23_24$Season <- "2023-2024"
+
+# Next combining all of the data frames
+PL_data <- bind_rows(PL19_20, PL20_21, PL21_22, PL22_23, PL23_24)
+
+head(PL_data)
+
+
+```
+
+#### Data Visualization
+
+In the end we want to be able to predict the final standings of a given Premier League season based on the training data we chose. To further understand a teams potential half way through the season, we believe it is important to look at how different explanatory variables compare to our outcome variable.
+
+-   Do certain explanatory variables help predict the final standings better than others?
+
+-   Which variable has the strongest relationship to total points at the end of the season?
+
+For example, creating a graph the compares a teams total points to their Goals Against Per Match could give us an indication that teams will lower goals let up half way through the season may tend to be higher up when the season finishes.
+
+```{r}
+library(ggplot2)
+library(readr)
+library(dplyr)
+
+
+```
