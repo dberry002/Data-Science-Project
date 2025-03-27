@@ -35,16 +35,29 @@ editor: visual
 -   Goal Differential (Dif): The ratio of goals for and against. Usually a team with a very high goal differential finished higher up on the table. This will be a good variable to look at for the first 15 games of the season.
 
 ```{r}
+# These are each of the data sets we will use as training data. 
 library(readr)
 PL19_20 <- read_csv("PL19-20.csv")
 head(PL19_20)
+
+PL20_21 <- read_csv("PL20-21.csv")
+head(PL20_21)
+
+PL21_22 <- read_csv("PL21-22.csv")
+head(PL21_22)
+
+PL22_23 <- read_csv("PL22-23.csv")
+head(PL22_23)
+
+PL23_24 <- read_csv("PL23-24.csv")
+head(PL23_24)
 ```
 
 #### Data Wrangling and Transformation
 
 **Initial Problems:**
 
-We came across an initial problem of finding a multiple data sets that would allow us to move further with out research questions. More specifically:
+We came across an initial problem of finding a multiple data sets that would allow us to move further with our research questions. More specifically:
 
 1.  We will be going back many years so data sets change from year to year and what they offer will also change. In more recent years there are more in-depth tables describing the league while in years like 2015 they aren't as descriptive.
 
