@@ -100,6 +100,48 @@ head(PL_data)
 
 ```
 
+#### Additional Variables for Analysis
+There are a few more variables that we will create to see if any will have a stronger relationship with end of season points.
+
+```{r}
+# The Proportion of matches won
+PL_data <- PL_data %>%
+  mutate(Win_Percentage = W / M)
+
+# The Proportion of matches lost
+PL_data <- PL_data %>%
+  mutate(Loss_Percentage = L / M)
+
+# The Proportion of matches drawn
+PL_data <- PL_data %>%
+  mutate(Draw_Percentage = D / M)
+
+# Goal Efficiency (Goals Per Win)
+PL_data <- PL_data %>%
+  mutate(Goals_by_Win = GF / W)
+
+# Defensive Ability (Goals Conceded per Win)
+PL_data <- PL_data %>%
+  mutate(GCBW = GA / W)
+
+# Attack-to-Defense Ratio (ADR)
+PL_data <- PL_data %>%
+  mutate(ADR = GF / GA)
+```
+
+Also we will add a categorical column to categorize teams into either: Aggressive, Dominant, Under performers, and Defensive, based on their GF and GA. 
+
+```{r}
+PL_data <- PL_data %>%
+  mutate(team_category = case_when(
+    GF >= median(GF) & GA >= median(GA) ~ "Aggressive",
+    GF >= median(GF) & GA < median(GA) ~ "Dominant",
+    GF < median(GF) & GA >= median(GA) ~ "Underperformers",
+    GF < median(GF) & GA < median(GA) ~ "Defensive"
+  ))
+```
+
+
 #### Data Visualization
 
 In the end we want to be able to predict the final standings of a given Premier League season based on the training data we chose. To further understand a teams potential half way through the season, we believe it is important to look at how different explanatory variables compare to our outcome variable.
@@ -108,44 +150,85 @@ In the end we want to be able to predict the final standings of a given Premier 
 
 -   Which variable has the strongest relationship to total points at the end of the season?
 
-For example, creating a graph the compares a teams total points to their Goals Against Per Match could give us an indication that teams will lower goals let up half way through the season may tend to be higher up when the season finishes.
-
+Summary Statistics Table
 ```{r}
+summary_table <- PL_data %>% 
+  select(Final_Points, Points, W, L, D, GF, GA, Dif, GPM, GAPM, 
+         GCBW, Goals_by_Win, 
+         Win_Percentage, Loss_Percentage, ADR) %>%
+  summary()
+
+print(summary_table)
+```
+
+Looking at the table, starting with points, there is a range from 5-55, indicating a wide disparity between the best and worst teams. Wins and Losses are both fairly balanced on average, but the spread shows that some teams have dominance while others struggle. The GPM columns shows that most teams score around 1-2 goals per game, but the GAPM varies quite a lot showing how important defense is in the Premier League. Furthermore, ADR seems to be a good variable as there is quite a good amount of spread, however has a few outliers representing the greatest and worst clubs throughout the 5 years.
+
+Correlation Heat map
+```{r, fig.width=10, fig.height=10}
 library(ggplot2)
 library(readr)
 library(dplyr)
 library(ggcorrplot)
 
-# We wanted to create a heatmap in order to see the correlation between our outcome variable and the other variables we will be comparing it to. We can use this in order to pick ones with strong correlations to show in our visuals. 
 
-correlation_matrix <- cor(PL_data %>% select(Points,Final_Points, W, L, D, GF, GA, Dif, GPM, GAPM))
-ggcorrplot(correlation_matrix, lab = TRUE)
+correlation_matrix <- cor(PL_data %>% select(Final_Points, Points,W, L, D, GF, GA, Dif, GPM, GAPM, ADR, GCBW, Goals_by_Win))
+ggcorrplot(correlation_matrix, lab = TRUE, type = "lower")
+```
+
+In this heat map you are able to see how certain variables have a stronger correlation to total points than others. The stronger the correlation the closer to positive 1 the grid will show. For clarification, the Final_Points variable represents the club's finishing points at the end of their respective season. The rest of the variables, including Points, represents the data from the club's first half of the season. 
+
+-   For example, you can see Final_ Points to GA is -0.81. This is telling us that as Goals Against goes up a team total points for the end of the season is projected to decrease. (which makes sense in this case). On the other hand, Final_Points to Differential is 0.93 which is telling us that teams with a higher point differential will tend to have a higher amount of points.
+
+Win Percentage Distribution
+```{r}
+ggplot(PL_data, aes(x = Win_Percentage)) +
+  geom_histogram(binwidth = 0.1, fill = "blue", color = "black") +
+  labs(title = "Distribution of Win Percentages",
+       x = "Win Percentage",
+       y = "Number of Teams") +
+  theme_minimal()
+```
+This graph above displays the distribution of all the win percentages of each team halfway through their respective season. Interestingly the distribution is not normal as their appears to be a rightward skew. Also from the summary statistics table and this graph the win percentage is around .4 which shows that most teams don't have a .500 win %.
 
 
-
+Final Points vs. Goals Against Per Match (GAPM) 
+```{r}
+ggplot(PL_data, aes(x = GAPM, y = Final_Points)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Points vs. Goals Against Per Match",
+       x = "Goals Against Per Match (GAPM)",
+       y = "Points") +
+  theme_minimal()
 
 ```
 
-In this heat map you are able to see how certain variables have a stronger correlation to total points than others. The stronger the correlation the closer to positive 1 the grid will show.
+We can see that there is a negative linear relationship between Goals Against Per Match and Points. This makes sense as the more goals you concede, the harder it is to generate league points.
 
--   For example, you can see Points to GA is -0.79. This is telling us that as Goals Against goes up a team total points is projected to decrease. (which makes sense in this case). On the other hand, Points to Differential is 0.94 which is telling us that teams will a higher point differential will tend to have a higher amount of points.
+Team Categories Distribution
+```{r}
+# Teams based on their category
+ggplot(PL_data, aes(x = GF, y = GA, color = team_category)) +
+  geom_point(aes(size = Final_Points)) +
+  scale_color_manual(values = c("Aggressive" = "red", "Dominant" = "green", "Underperformers" = "blue", "Defensive" = "purple")) +
+  labs(title = "Team Categories Based on Goals Scored",
+       x = "Goals Scored",
+       y = "Goals Against",
+       color = "Team Archetype",
+       size = "Final Points") +
+  theme_minimal()
+```
+This graph looks at each individual clubs' Goals For and Against. However it uses the team category variable which we created earlier to categorize them and then show their end of season points through the sizing of their dot in the dot plot. Its clear the teams that don't let in a lot of goals but score a lot early on in the season continue to do so later on. These teams we quantified as dominant for that reason. However for the defensive, aggressive, and under performer categories it is a little less clear how they finish the season as the sizing of the dots look relatively similar. So we will compare the average points per each team archetype to observe the difference. 
+
 
 ```{r}
-library(ggplot2)
-library(dplyr)
+category_points <- PL_data %>%
+  group_by(team_category) %>%
+  summarize(average_points = mean(Final_Points, na.rm = TRUE))
 
-# Scatter plot showing Wins Verse Points. This is a visual that will help show how teams with more wins will tend to have a more Points. This helps shows why the correlation between these two variables is .98. More wins equals more points!
-
-ggplot(PL23_24, aes(x = W, y = Points)) +
-  geom_point(color = "blue") +
-  geom_text(aes(label=ifelse(Points > 41,as.character(Team),'')),hjust=1.1,vjust=0) +
-  geom_text(aes(label=ifelse(Points < 10,as.character(Team),'')),hjust=0.03,vjust=-1) +
-  geom_smooth(method = "lm", color = "red", se = FALSE) +
-  labs(title = "Wins vs Total Points",
-       x = "Wins",
-       y = "Total Points") +
-  theme_bw()
-
-# This is just from the 23-24 season. 
-
+category_points
 ```
+Now looking at this table the defensive teams, on average, perform slightly better than the aggressive teams. To little surprise, the teams that under perform in the first half of the season tend to also under perform relative to the other archetypes. 
+
+#### Conclusion
+Numerous insights can be drawn from our brief analysis. Firstly, the heat map displayed how a teams performance in the first half of the season is quite similar to that of the second half. This can be inferred as many different variables all had a high correlation with the end of season points. Next, the distribution of team performance is quite variable. Both shown through the summary statistics table and the win percentage distribution graph, the club's performance data were quite spread out with few of them remaining close to the average. So, in this league there can be pure dominance and utter failure rather than most teams simply performing at the average. Finally defensive teams perform a little better than aggressive teams as conceding less goals seems to be more important that scoring goals.  
