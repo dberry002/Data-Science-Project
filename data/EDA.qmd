@@ -51,6 +51,7 @@ head(PL22_23)
 
 PL23_24 <- read_csv("PL23-24.csv")
 head(PL23_24)
+
 ```
 
 #### Data Wrangling and Transformation
@@ -110,6 +111,38 @@ For example, creating a graph the compares a teams total points to their Goals A
 library(ggplot2)
 library(readr)
 library(dplyr)
+library(ggcorrplot)
 
+# We wanted to create a heatmap in order to see the correlation between our outcome variable and the other variables we will be comparing it to. We can use this in order to pick ones with strong correlations to show in our visuals. 
+
+correlation_matrix <- cor(PL_data %>% select(Points,W, L, D, GF, GA, Dif, GPM, GAPM))
+ggcorrplot(correlation_matrix, lab = TRUE)
+
+
+
+
+```
+
+In this heat map you are able to see how certain variables have a stronger correlation to total points than others. The stronger the correlation the closer to positive 1 the grid will show.
+
+-   For example, you can see Points to GA is -0.79. This is telling us that as Goals Against goes up a team total points is projected to decrease. (which makes sense in this case). On the other hand, Points to Differential is 0.94 which is telling us that teams will a higher point differential will tend to have a higher amount of points.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Scatter plot showing Wins Verse Points. This is a visual that will help show how teams with more wins will tend to have a more Points. This helps shows why the correlation between these two variables is .98. More wins equals more points!
+
+ggplot(PL23_24, aes(x = W, y = Points)) +
+  geom_point(color = "blue") +
+  geom_text(aes(label=ifelse(Points > 41,as.character(Team),'')),hjust=1.1,vjust=0) +
+  geom_text(aes(label=ifelse(Points < 10,as.character(Team),'')),hjust=0.03,vjust=-1) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  labs(title = "Wins vs Total Points",
+       x = "Wins",
+       y = "Total Points") +
+  theme_bw()
+
+# This is just from the 23-24 season. 
 
 ```
