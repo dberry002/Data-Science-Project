@@ -16,3 +16,4 @@ This codebook describes the variables used in this project, including those crea
 | `Points`        | Total points so far                  | Integer | 0 to 114            |
 | `GPM`           | Goals per match                      | Float   | 0+                  |
 | `GAPM`          | Goals conceded per match             | Float   | 0+                  |
+| `Final_Points`  | Final Points at end of Season        | Integer | 0+                  |
