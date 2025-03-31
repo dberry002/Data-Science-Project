@@ -40,6 +40,7 @@ library(readr)
 PL19_20 <- read_csv("PL19-20.csv")
 head(PL19_20)
 
+
 PL20_21 <- read_csv("PL20-21.csv")
 head(PL20_21)
 
@@ -51,6 +52,7 @@ head(PL22_23)
 
 PL23_24 <- read_csv("PL23-24.csv")
 head(PL23_24)
+
 
 ```
 
@@ -75,6 +77,7 @@ For these specific data sets there was no missing information but there were a f
 1.  Getting rid of the logo column. There was a column in the data set that just consisted of the logo for each team so we deleted that.
 2.  Changed Column names to something more readable. For example, Goal differentials was taken down in this format originally: 48:22, meaning a team scored 48 and let in 22 goals. We changed it to two different columns GF and GA that has the first number in GF and the second number in GA. Then in a column name Diff we have the differential of those two.
 3.  We added a few columns to make our data more specific. These include the GF, GA, GPM, and GAPM. The last two standing for Goals Per Match and Goals Against Per Match.
+4.  We also added a Final_Points column that has each teams point total after the season is done. This will be useful in comparing our predictions to the actual final outcomes.
 
 #### Data Frame Creation
 
@@ -115,7 +118,7 @@ library(ggcorrplot)
 
 # We wanted to create a heatmap in order to see the correlation between our outcome variable and the other variables we will be comparing it to. We can use this in order to pick ones with strong correlations to show in our visuals. 
 
-correlation_matrix <- cor(PL_data %>% select(Points,W, L, D, GF, GA, Dif, GPM, GAPM))
+correlation_matrix <- cor(PL_data %>% select(Points,Final_Points, W, L, D, GF, GA, Dif, GPM, GAPM))
 ggcorrplot(correlation_matrix, lab = TRUE)
 
 
