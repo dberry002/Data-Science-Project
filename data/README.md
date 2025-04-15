@@ -21,8 +21,8 @@ This codebook describes the variables used in this project, including those crea
 | `Draw_Percentage`| Draw Percentage for a club              | Float     | 0+                    |
 | `Goals_by_Win`   | Goals For divided by the Wins           | Float     | 0+                    |
 | `GCBW`           | Goals Against divided by Wins           | Float     | 0+                    |
-| `ADR`            | Attack-to-Defense Ratio (GF/GA)         |Categorical| Aggressive,Dominant,  |
-| `team_category`  | Categorize teams into either:           |           |  Under Performer,     |
-|                  | Aggressive, Dominant, Under performers, |           |  Defensive            |
-|                  | and Defensive, based on their GF and GA | Float     | 0+                    |
+| `ADR`            | Attack-to-Defense Ratio (GF/GA)         |Float      | 0+                    |
+| `team_category`  | Categorize teams into either:           |Categorical| Aggressive,Dominant,  |
+|                  | Aggressive, Dominant, Under performers, |           | Under Performer,      |
+|                  | and Defensive, based on their GF and GA |           |  Defensive            |
 | `Final_Points`   | Final Points at end of Season           | Integer   | 0+                    |
