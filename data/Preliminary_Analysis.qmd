@@ -1,0 +1,174 @@
+---
+title: "Preliminary Analysis"
+author: "Aiden Santoro and Daniel Berry"
+date: "April 17, 2025"
+format: html
+---
+
+## Introduction and Data
+
+```{r}
+library(readr)
+PL19_20 <- read_csv("PL_data.csv")
+head(PL19_20)
+```
+
+### Research Question
+
+Can a team's performance metrics after the first half of the English Premier League season reliably predict their final standings?
+
+### Background and Motivation
+
+The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome.There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season.By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
+
+### Data Description
+
+-   **Source**: where it came from?
+-   **Collection Method**: Data was scraped from where?
+-   **Variables**:
+    -   **Outcome Variable**: `Final_Points` (total points at the end of the season).
+    -   **Explanatory Variables** (All from first half of respective season):
+        -   `Points` (points after 19 matches), `GF` (goals for), `GA` (goals against), `Diff` (goal differential), `GPM` (goals per match), `GAPM` (goals against per match), `Win_Percentage`, `team_category` (categorical variable based on GF and GA), ETC.
+-   **Data Wrangling**:
+    -   Removed irrelevant columns (e.g., team logos).
+    -   Created new variables (e.g., `Win_Percentage`, `ADR`).
+    -   Combined data from multiple seasons into a single dataframe.
+    -   Handled missing values (none found in this dataset).
+
+## Methodology
+
+### Approach
+
+-   **Exploratory Data Analysis (EDA)**: Visualizations and summary statistics to identify patterns and relationships.
+-   **Statistical Modeling**: Some Model to quantify the relationship between explanatory variables and `Final_Points`.
+-   **Validation**: Cross-validation to assess model performance.
+
+### Justification for Methods
+
+...
+
+### Key Visualizations (Reuse from EDA)
+
+```{r, fig.width=7, fig.height=7, warning = FALSE}
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(ggcorrplot)
+
+
+correlation_matrix <- cor(PL_data %>% select(Final_Points, Points,W, L, D, GF, GA, Dif, GPM, GAPM, ADR, GCBW, Goals_by_Win))
+ggcorrplot(correlation_matrix, lab = TRUE, type = "lower")
+```
+
+The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points It clearly shows that goal differential (Dif), midseason points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.
+
+```{r}
+ggplot(PL_data, aes(x = GAPM, y = Final_Points)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Points vs. Goals Against Per Match",
+       x = "Goals Against Per Match (GAPM)",
+       y = "Points") +
+  theme_minimal()
+```
+
+The scatter plot comparing Goals Against Per Match (GAPM) with Final_Points shows a clear negative relationship. As GAPM increases—meaning teams are conceding more goals per match—their final point totals tend to decrease. This trend is reinforced by the red linear regression line, which slopes downward, suggesting a strong negative association between defensive performance and season success. This visualization supports the conclusion that solid defensive metrics midway through the season are strong indicators of how a team will perform overall. As such, GAPM is a valuable explanatory variable to include in predictive models for final standings.
+
+Based on the heat map, we selected variables for our linear regression model that showed the strongest correlations with Final_Points. Goal Differential (Diff) had the highest positive correlation, making it a clear choice. Goals Against (GA) showed a strong negative correlation, reinforcing the importance of defensive performance. Additionally, Win_Percentage captured match-level success and also demonstrated a strong positive relationship with final outcomes. These variables were chosen not only for their statistical relationship but also for their interpretability in a soccer performance context.
+
+## Model 2: Multiple Linear Regression
+
+```{r}
+library(caret)      
+library(Metrics)      
+library(ggplot2)
+
+# Target variable
+y <- PL_data$Final_Points
+
+# Predictors
+X <- PL_data[, c("Dif", "GA", "Win_Percentage")]
+
+# Combine X and y into one data frame
+df_model <- data.frame(Final_Points = y, X)
+
+# Split into training and testing sets (75% train, 25% test)
+set.seed(42)
+train_index <- createDataPartition(df_model$Final_Points, p = 0.75, list = FALSE)
+train_data <- df_model[train_index, ]
+test_data <- df_model[-train_index, ]
+
+# Fit linear regression model
+model <- lm(Final_Points ~ Dif + GA + Win_Percentage, data = train_data)
+
+
+summary(model)
+
+# Predict on test data
+predictions <- predict(model, newdata = test_data)
+
+r2 <- R2(predictions, test_data$Final_Points)
+rmse_val <- rmse(test_data$Final_Points, predictions)
+
+cat("R² Score:", round(r2, 3), "\n")
+cat("RMSE:", round(rmse_val, 2), "\n")
+
+
+```
+
+```{r}
+library(caret)
+
+# training control with 10-fold CV
+train_control <- trainControl(method = "cv", number = 10)
+
+# Cross-Validation
+cv_model <- train(
+  Final_Points ~ Dif + GA + Win_Percentage,
+  data = df_model,
+  method = "lm",
+  trControl = train_control
+)
+
+print(cv_model)
+
+```
+
+## Results
+
+### Key Findings
+
+To evaluate the performance of our multiple linear regression model predicting Final_Points, we used two complementary validation techniques: a traditional train/test split and 10-fold cross-validation.
+
+We first applied a 75/25 train/test split, where the model was trained on 75% of the data and tested on the remaining 25%. This allowed us to assess how well the model performs on a single, unseen subset of data. From this approach, we achieved an R² score of 0.92 and an RMSE of 5.79, indicating a strong fit but still subject to the randomness of one specific split.
+
+To obtain a more robust and generalizable assessment, we also performed 10-fold cross-validation. This method divides the dataset into 10 parts, training the model on 9 and testing on the 1 remaining fold, repeating the process 10 times. The performance metrics are then averaged across all folds. This approach yielded an even stronger result, with an R² of 0.936 and an RMSE of 5.10.
+
+Using both techniques allowed us to compare the model’s performance on a specific split versus its average performance across multiple random splits. The cross-validation results suggest that the model performs consistently well across different subsets of the data and is unlikely to be overfitting to a particular sample. This enhances our confidence in the model’s reliability and predictive strength when applied to new data.
+
+### Statistical Models
+
+-   **Model 1**: Simple linear regression of `Final_Points` on `Diff`.
+    -   Equation: `Final_Points = a + b * Diff`.
+    -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
+-   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
+    -   Assess which variables are most predictive.
+
+## Discussion
+
+...
+
+### Summary of Findings
+
+...
+
+### Limitations
+
+-   **Data Scope**: Limited to 5 seasons; may not capture long-term trends or anomalies.
+-   **Generalization**: Findings may not apply to other leagues with different competitive dynamics.
+
+### Future Work
+
+-   Include more seasons or leagues to validate findings.
+-   Explore more advanced models (e.g., machine learning) for non-linear relationships.
+-   Investigate the impact of external factors (e.g., injuries, managerial changes).

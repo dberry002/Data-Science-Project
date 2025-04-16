@@ -7,25 +7,45 @@ format: html
 
 ## Introduction and Data
 
+```{r}
+# These are each of the data sets we will use as training data. 
+library(readr)
+PL19_20 <- read_csv("PL19-20.csv")
+head(PL19_20)
+
+
+PL20_21 <- read_csv("PL20-21.csv")
+head(PL20_21)
+
+PL21_22 <- read_csv("PL21-22.csv")
+head(PL21_22)
+
+PL22_23 <- read_csv("PL22-23.csv")
+head(PL22_23)
+
+PL23_24 <- read_csv("PL23-24.csv")
+head(PL23_24)
+```
+
 ### Research Question
 
 Can a team's performance metrics after the first half of the English Premier League season reliably predict their final standings?
 
 ### Background and Motivation
 
-The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome.There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season.By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
+The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome.There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season. By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
 
 ### Data Description
 
--   **Source**: where it came from?
--   **Collection Method**: Data was scraped from where?
+-   **Source**: Data was gathered from publicly available tables that covered Premier League standings at the midseason and final standings.
+-   **Collection Method**: Data was first manually copied in an Excel Spreadsheet. From there we were able to use feature engineering to add new columns based on the ones from the original data set. This allowed us to create more descriptive variables that can better the performance of our models in the future. After this we saved them as a csv file and imported them into RStudio.
 -   **Variables**:
     -   **Outcome Variable**: `Final_Points` (total points at the end of the season).
     -   **Explanatory Variables** (All from first half of respective season):
         -   `Points` (points after 19 matches), `GF` (goals for), `GA` (goals against), `Diff` (goal differential), `GPM` (goals per match), `GAPM` (goals against per match), `Win_Percentage`, `team_category` (categorical variable based on GF and GA), ETC.
 -   **Data Wrangling**:
     -   Removed irrelevant columns (e.g., team logos).
-    -   Created new variables (e.g., `Win_Percentage`, `ADR`).
+    -   Created new variables (e.g., `Win_Percentage`, `ADR`, `GPM`, `GAPM`)
     -   Combined data from multiple seasons into a single dataframe.
     -   Handled missing values (none found in this dataset).
 
@@ -39,9 +59,14 @@ The English Premier League is one of the most competitive soccer leagues globall
 
 ### Justification for Methods
 
-...
+Given the numeric nature of the outcome variable, linear regression is appropriate to understand the strength and direction of relationships.
 
 ### Key Visualizations (Reuse from EDA)
+
+```{python}
+correlation_matrix <- cor(PL_data %>% select(Final_Points, Points, W, L, D, GF, GA, Dif, GPM, GAPM, ADR, GCBW, Goals_by_Win))
+ggcorrplot(correlation_matrix, lab = TRUE, type = "lower")
+```
 
 ## Results
 
