@@ -1,6 +1,11 @@
 ---
 title: "Exploratory Data Analysis"
+<<<<<<< HEAD
 format: pdf
+=======
+author: "Aiden Santoro and Daniel Berry"
+format: html
+>>>>>>> bdf0d8be9ccbb657a1bf5708659227d8bdfd6e70
 editor: visual
 ---
 
@@ -142,6 +147,15 @@ PL_data <- PL_data %>%
   ))
 ```
 
+<<<<<<< HEAD
+=======
+Finally we will save this data frame to a csv file to use for the final report
+```{r}
+write_csv(PL_data, "PL_data.csv") 
+```
+
+
+>>>>>>> bdf0d8be9ccbb657a1bf5708659227d8bdfd6e70
 #### Data Visualization
 
 In the end we want to be able to predict the final standings of a given Premier League season based on the training data we chose. To further understand a teams potential half way through the season, we believe it is important to look at how different explanatory variables compare to our outcome variable.
@@ -166,7 +180,11 @@ Looking at the table, starting with points, there is a range from 5-55, indicati
 
 Correlation Heat map
 
+<<<<<<< HEAD
 ```{r, fig.width=10, fig.height=10}
+=======
+```{r, fig.width=10, fig.height=10, warning = FALSE}
+>>>>>>> bdf0d8be9ccbb657a1bf5708659227d8bdfd6e70
 library(ggplot2)
 library(readr)
 library(dplyr)
@@ -191,9 +209,15 @@ ggplot(PL_data, aes(x = Win_Percentage)) +
        y = "Number of Teams") +
   theme_minimal()
 ```
+<<<<<<< HEAD
 
 This graph above displays the distribution of all the win percentages of each team halfway through their respective season. Interestingly the distribution is not normal as their appears to be a rightward skew. Also from the summary statistics table and this graph the win percentage is around .4 which shows that most teams don't have a .500 win %.
 
+=======
+
+This graph above displays the distribution of all the win percentages of each team halfway through their respective season. Interestingly the distribution is not normal as their appears to be a rightward skew. Also from the summary statistics table and this graph, the win percentage is around .4 which shows that most teams don't have a .500 win %.
+
+>>>>>>> bdf0d8be9ccbb657a1bf5708659227d8bdfd6e70
 Final Points vs. Goals Against Per Match (GAPM)
 
 ```{r}

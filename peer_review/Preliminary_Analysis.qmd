@@ -1,0 +1,79 @@
+---
+title: "Preliminary Analysis"
+author: "Aiden Santoro and Daniel Berry"
+date: "April 17, 2025"
+format: html
+---
+
+## Introduction and Data
+
+### Research Question
+
+Can a team's performance metrics after the first half of the English Premier League season reliably predict their final standings?
+
+### Background and Motivation
+
+The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome.There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season.By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
+
+### Data Description
+
+-   **Source**: where it came from?
+-   **Collection Method**: Data was scraped from where?
+-   **Variables**:
+    -   **Outcome Variable**: `Final_Points` (total points at the end of the season).
+    -   **Explanatory Variables** (All from first half of respective season):
+        -   `Points` (points after 19 matches), `GF` (goals for), `GA` (goals against), `Diff` (goal differential), `GPM` (goals per match), `GAPM` (goals against per match), `Win_Percentage`, `team_category` (categorical variable based on GF and GA), ETC.
+-   **Data Wrangling**:
+    -   Removed irrelevant columns (e.g., team logos).
+    -   Created new variables (e.g., `Win_Percentage`, `ADR`).
+    -   Combined data from multiple seasons into a single dataframe.
+    -   Handled missing values (none found in this dataset).
+
+## Methodology
+
+### Approach
+
+-   **Exploratory Data Analysis (EDA)**: Visualizations and summary statistics to identify patterns and relationships.
+-   **Statistical Modeling**: Some Model to quantify the relationship between explanatory variables and `Final_Points`.
+-   **Validation**: Cross-validation to assess model performance.
+
+### Justification for Methods
+
+...
+
+### Key Visualizations (Reuse from EDA)
+
+## Results
+
+...
+
+### Key Findings
+
+...
+
+### Statistical Models
+
+-   **Model 1**: Simple linear regression of `Final_Points` on `Diff`.
+    -   Equation: `Final_Points = a + b * Diff`.
+    -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
+-   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
+    -   Assess which variables are most predictive.
+
+## Discussion
+
+...
+
+### Summary of Findings
+
+...
+
+### Limitations
+
+-   **Data Scope**: Limited to 5 seasons; may not capture long-term trends or anomalies.
+-   **Generalization**: Findings may not apply to other leagues with different competitive dynamics.
+
+### Future Work
+
+-   Include more seasons or leagues to validate findings.
+-   Explore more advanced models (e.g., machine learning) for non-linear relationships.
+-   Investigate the impact of external factors (e.g., injuries, managerial changes).
