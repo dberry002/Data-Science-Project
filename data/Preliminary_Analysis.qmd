@@ -23,9 +23,9 @@ The English Premier League is one of the most competitive soccer leagues globall
 
 ### Data Description
 
-**Source**: where it came from?
+**Source**: <https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/19/>
 
-**Collection Method**: Data was scraped from where?
+**Collection Method**: We manually copied the data into an excel file where we performed feature engineering in order to create new variables that would better the performance of our models in the future. From there after cleaning and formatting the data table we saved it as a csv and uploaded it into RStudio.
 
 -   **Variables**:
     -   **Outcome Variable**: `Final_Points` (total points at the end of the season).
@@ -65,10 +65,6 @@ For these specific data sets there was no missing information but there were a f
 -   **Statistical Modeling**: Two Models to quantify the relationship between explanatory variables and `Final_Points`.
 -   **Validation**: Cross-validation to assess model performance.
 
-### Justification for Methods
-
-...
-
 ### Key Visualizations (Reuse from EDA)
 
 ```{r, fig.width=7, fig.height=7, warning = FALSE}
@@ -97,6 +93,18 @@ ggplot(PL_data, aes(x = GAPM, y = Final_Points)) +
 The scatter plot comparing Goals Against Per Match (GAPM) with Final_Points shows a clear negative relationship. As GAPM increases—meaning teams are conceding more goals per match—their final point totals tend to decrease. This trend is reinforced by the red linear regression line, which slopes downward, suggesting a strong negative association between defensive performance and season success. This visualization supports the conclusion that solid defensive metrics midway through the season are strong indicators of how a team will perform overall. As such, GAPM is a valuable explanatory variable to include in predictive models for final standings.
 
 Based on the heat map, we selected variables for our linear regression model that showed the strongest correlations with Final_Points. Goal Differential (Diff) had the highest positive correlation, making it a clear choice. Goals Against (GA) showed a strong negative correlation, reinforcing the importance of defensive performance. Additionally, Win_Percentage captured match-level success and also demonstrated a strong positive relationship with final outcomes. These variables were chosen not only for their statistical relationship but also for their interpretability in a soccer performance context.
+
+## Model 1: Simple Linear Regression
+
+We created this simple linear regression model using only goal differential (Diff) to serve as a baseline. It allows us to evaluate the individual predictive strength of one key variable and compare it to more complex models with multiple predictors. The goal is to assess how much additional accuracy is gained by incorporating other performance metrics like Goals Against and Win Percentage.
+
+```{r}
+# Simple linear regression
+simple_model <- lm(Final_Points ~ Dif, data = train_data)
+
+summary(simple_model)
+
+```
 
 ## Model 2: Multiple Linear Regression
 
@@ -156,9 +164,16 @@ print(cv_model)
 
 ```
 
+### Justification for Methods
+
+We used multiple linear regression to predict a team’s final point total because the outcome variable, Final_Points, is continuous and numerical. Our exploratory analysis showed strong linear relationships between key mid season performance metrics—such as Goal Differential, Goals Against, and Win Percentage—and final standings. Multiple linear regression allowed us to model the combined effect of these variables while maintaining interpretability, enabling us to quantify how each factor contributes to a team's overall success. This method also served as a strong baseline for future comparisons with more complex models.
+
+Along with this, we created a simple linear model before it so we could compare how adding more variables can increase the model’s predictive power. In this case, when comparing the two, the multiple regression model clearly outperforms the single-variable model. While the simple model using only goal differential (Diff) explained about 86.5% of the variance in final point totals, the multiple regression model—which also included Goals Against (GA) and Win_Percentage—explained over 93% of the variance and achieved a lower RMSE. This demonstrates that incorporating multiple relevant performance metrics provides a more accurate and reliable prediction of team success, highlighting the value of a multivariate approach.
+
 ## Model 3: LASSO Regression for Feature Importance
 
 Loading Data in
+
 ```{python}
 import pandas as pd
 import numpy as np
@@ -172,6 +187,7 @@ from sklearn.linear_model import LinearRegression, RidgeCV, ElasticNetCV
 ```
 
 X and Y Creation
+
 ```{python}
 PL_data = pd.read_csv("PL_data.csv")
 
@@ -187,6 +203,7 @@ X = PL_data.drop(columns=['Final_Points','Season','Team'])
 ```
 
 Initializing GroupKFold, preprocessor, and pipeline
+
 ```{python}
 group_kfold = GroupKFold(n_splits=5)
 
@@ -206,12 +223,11 @@ def make_pipeline(estimator):
 ```
 
 LASSO model creation
+
 ```{python}
 #initializing lasso model
-lasso_pipe = make_pipeline(ElasticNetCV(alphas=np.logspace(-5, 5, 100), l1_ratio=1, max_iter=20000))
+lasso_pipe = make_pipeline(ElasticNetCV(alphas=np.logspace(-3, 3, 100), l1_ratio=1, max_iter=20000))
 ```
-
-
 
 ```{python, warning=FALSE}
 
@@ -235,7 +251,6 @@ cv_lasso = cv_model(lasso_pipe)
 print(cv_lasso['test_score'])
 ```
 
-
 ```{python, warning=FALSE}
 cv_lasso = cv_model(lasso_pipe)
 
@@ -243,10 +258,12 @@ mse_lasso = cv_lasso['test_score'].mean()
 ```
 
 Average MSE for the models
+
 ```{python}
 mse_lasso = cv_lasso['test_score'].mean()
 print(mse_lasso)
 ```
+
 ```{python}
 
 pd.set_option('display.max_columns', None) 
@@ -285,18 +302,19 @@ plt.tight_layout()
 plt.show()
 ```
 
-
 Finding the highest average value for each feature
+
 ```{python}
 mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
 mean_coefs.head(10)  
 ```
+
 Finding the features that were used the most often
+
 ```{python}
 non_zero_counts = (coef_df != 0).sum()
 non_zero_counts.sort_values(ascending=False).head(5)
 ```
-
 
 ## Results
 
@@ -310,6 +328,22 @@ To obtain a more robust and generalizable assessment, we also performed 10-fold 
 
 Using both techniques allowed us to compare the model’s performance on a specific split versus its average performance across multiple random splits. The cross-validation results suggest that the model performs consistently well across different subsets of the data and is unlikely to be overfitting to a particular sample. This enhances our confidence in the model’s reliability and predictive strength when applied to new data.
 
+The following is the multiple regression formula:
+
+$$
+\text{Final_Points} = 37.39 + 0.31 \times \text{Diff} - 0.31 \times \text{GA} + 60.34 \times \text{Win_Percentage}
+$$
+
+We applied this formula to a team that had the following stats halfway through the season:
+
+-   Goal Differential (Diff) = 6
+
+-   Goals Against (GA) = 27
+
+-   Win Percentage (Win_Percentage) = 0.526 (i.e., won 10 of 19 matches)
+
+Plugging these into the formula we predict that the team will finish around 62.61 points which is only 3.4 points off there actual final points which was 66. This example reinforces the model’s strength in using early-season metrics to make accurate and interpretable end-of-season predictions.
+
 ### Statistical Models
 
 -   **Model 1**: Simple linear regression of `Final_Points` on `Diff`.
@@ -317,19 +351,20 @@ Using both techniques allowed us to compare the model’s performance on a speci
     -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
 -   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
     -   Assess which variables are most predictive.
--   **Model 3**: LASSO regression 
+-   **Model 3**: LASSO regression
     -   Assess which features are the best/worst at predicting Final_Points.
-    
-    
+
 ## Discussion
 
-...
+This project set out to answer the question: Can a team’s midseason performance metrics reliably predict their final point total in the English Premier League? Based on our statistical analysis and multiple linear regression model, the answer is yes — midseason indicators such as goal differential, goals against, and win percentage showed strong predictive power. Our final model achieved an R² of 0.936 with a root mean squared error of 5.10, meaning it could predict final point totals with impressive accuracy using only a few simple inputs.
 
+From a methodological standpoint, we selected variables based on exploratory visualizations and correlation analysis. The stepwise comparison between the simple and multiple linear regression models demonstrated that including more meaningful variables significantly improved predictive accuracy. In terms of validation, we used both a 75/25 train-test split and 10-fold cross-validation, allowing us to compare performance under different scenarios. Cross-validation provided a more reliable assessment of model generalizability and gave us greater confidence in the robustness of our findings.
 
 ### Limitations
 
 -   **Data Scope**: Limited to 5 seasons; may not capture long-term trends or anomalies.
 -   **Generalization**: Findings may not apply to other leagues with different competitive dynamics.
+-   **Future Years:** the model may not generalize perfectly to future seasons due to external factors.
 
 ### Future Work
 
