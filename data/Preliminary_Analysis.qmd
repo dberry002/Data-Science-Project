@@ -9,8 +9,8 @@ format: html
 
 ```{r}
 library(readr)
-PL19_20 <- read_csv("PL_data.csv")
-head(PL19_20)
+PL_Data <- read_csv("PL_data.csv")
+head(PL_Data)
 ```
 
 ### Research Question
@@ -23,24 +23,46 @@ The English Premier League is one of the most competitive soccer leagues globall
 
 ### Data Description
 
--   **Source**: where it came from?
--   **Collection Method**: Data was scraped from where?
+**Source**: where it came from?
+
+**Collection Method**: Data was scraped from where?
+
 -   **Variables**:
     -   **Outcome Variable**: `Final_Points` (total points at the end of the season).
     -   **Explanatory Variables** (All from first half of respective season):
-        -   `Points` (points after 19 matches), `GF` (goals for), `GA` (goals against), `Diff` (goal differential), `GPM` (goals per match), `GAPM` (goals against per match), `Win_Percentage`, `team_category` (categorical variable based on GF and GA), ETC.
--   **Data Wrangling**:
-    -   Removed irrelevant columns (e.g., team logos).
-    -   Created new variables (e.g., `Win_Percentage`, `ADR`).
-    -   Combined data from multiple seasons into a single dataframe.
-    -   Handled missing values (none found in this dataset).
+        -   Please view the code book to view each variable and its description.
+
+### Data Wrangling:
+
+**Initial Problems:**
+
+We came across an initial problem of finding a multiple data sets that would allow us to move further with our research questions. More specifically:
+
+1.  We will be going back many years so data sets change from year to year and what they offer will also change. In more recent years there are more in-depth tables describing the league while in years like 2015 they aren't as descriptive.
+
+    1.  **Solution:** We are going to bring the years being used for the training data to more present seasons. Starting from the 2019-2020 season until the 2023-2024 will give us a good amount of data in order to accurately predict the final standings.
+
+2.  We originally said 15 games but it makes more sense to just do halfway through the season which is 19 games and this data seems to be more readily available.
+
+    1.  **Solution:** We were able to find data tables online that give information halfway through the season for each year we are going to use.
+
+**Data Cleaning and Variable Creation**
+
+For these specific data sets there was no missing information but there were a few things we had to add and change. First off, to pull these data sets into RStudio we copied them into excel, saved them as a csv file, and then uploaded them to our qmd file.
+
+1.  Getting rid of the logo column. There was a column in the data set that just consisted of the logo for each team so we deleted that.
+2.  Changed Column names to something more readable. For example, Goal differentials was taken down in this format originally: 48:22, meaning a team scored 48 and let in 22 goals. We changed it to two different columns GF and GA that has the first number in GF and the second number in GA. Then in a column name Diff we have the differential of those two.
+3.  We added a few numerical columns to make our data more specific. These include the GF, GA, GPM, and GAPM, Win%, Loss%, Goals_by_Win, GCBW, and ADR.
+4.  Also we will add a categorical column to categorize teams into either: Aggressive, Dominant, Under performers, and Defensive, based on their GF and GA.
+5.  Finally we added a Final_Points column that has each teams point total after the season is done. This will be useful in comparing our predictions to the actual final outcomes.
 
 ## Methodology
 
 ### Approach
 
--   **Exploratory Data Analysis (EDA)**: Visualizations and summary statistics to identify patterns and relationships.
--   **Statistical Modeling**: Some Model to quantify the relationship between explanatory variables and `Final_Points`.
+-   **Exploratory Data Analysis (EDA)**:
+    -   Numerous insights can be drawn from our brief analysis. Firstly, the heat map displayed how a teams performance in the first half of the season is quite similar to that of the second half. This can be inferred as many different variables all had a high correlation with the end of season points. Next, the distribution of team performance is quite variable. Both shown through the summary statistics table and the win percentage distribution graph, the club's performance data were quite spread out with few of them remaining close to the average. So, in this league there can be pure dominance and utter failure rather than most teams simply performing at the average. Finally defensive teams perform a little better than aggressive teams as conceding less goals seems to be more important that scoring goals.
+-   **Statistical Modeling**: Two Models to quantify the relationship between explanatory variables and `Final_Points`.
 -   **Validation**: Cross-validation to assess model performance.
 
 ### Justification for Methods
@@ -134,6 +156,148 @@ print(cv_model)
 
 ```
 
+## Model 3: LASSO Regression for Feature Importance
+
+Loading Data in
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_transformer
+from sklearn.model_selection import cross_validate, GroupKFold
+from sklearn.linear_model import LinearRegression, RidgeCV, ElasticNetCV
+```
+
+X and Y Creation
+```{python}
+PL_data = pd.read_csv("PL_data.csv")
+
+PL_data = PL_data.drop(columns=['Pos','#']) 
+#defining y var
+y = PL_data['Final_Points']
+
+# identifying cat col
+categorical_features = ['team_category'] 
+
+# defining x var
+X = PL_data.drop(columns=['Final_Points','Season','Team'])  
+```
+
+Initializing GroupKFold, preprocessor, and pipeline
+```{python}
+group_kfold = GroupKFold(n_splits=5)
+
+# preprocessor
+preprocessor = make_column_transformer(
+    (OneHotEncoder(), categorical_features),
+    (StandardScaler(), X.select_dtypes(include=np.number).columns)
+)
+
+#pipeline function 
+def make_pipeline(estimator):
+    return Pipeline([
+        ('preprocessor', preprocessor),
+        ('estimator', estimator)
+    ])
+
+```
+
+LASSO model creation
+```{python}
+#initializing lasso model
+lasso_pipe = make_pipeline(ElasticNetCV(alphas=np.logspace(-5, 5, 100), l1_ratio=1, max_iter=20000))
+```
+
+
+
+```{python, warning=FALSE}
+
+def cv_model(pipeline):
+    cv_mod = cross_validate(
+        estimator=pipeline,
+        X=X,
+        y=y,
+        cv=group_kfold,
+        groups = PL_data['Season'],
+        scoring='neg_mean_squared_error',
+        return_estimator=True,
+        n_jobs=1
+    )
+    return cv_mod
+
+cv_lasso = cv_model(lasso_pipe)
+
+
+#example of test score output for OLS
+print(cv_lasso['test_score'])
+```
+
+
+```{python, warning=FALSE}
+cv_lasso = cv_model(lasso_pipe)
+
+mse_lasso = cv_lasso['test_score'].mean()
+```
+
+Average MSE for the models
+```{python}
+mse_lasso = cv_lasso['test_score'].mean()
+print(mse_lasso)
+```
+```{python}
+
+pd.set_option('display.max_columns', None) 
+
+numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Points', 'GPM', 'GAPM',
+    'Win_Percentage', 'Loss_Percentage', 'Draw_Percentage', 
+    'Goals_by_Win', 'GCBW', 'ADR']
+                   
+team_cat__features = ['team_category_Aggressive', 'team_category_Defensive', 'team_category_Dominant', 'team_category_Underperformers']
+
+feature_names = team_cat__features + numeric_features
+
+
+coef_df = pd.DataFrame(
+    [model['estimator'].coef_ for model in cv_lasso['estimator']],
+    columns=feature_names
+)
+coef_df.head()
+
+```
+
+```{python}
+plt.figure(figsize=(12, 6))
+sns.stripplot(
+    data=coef_df
+)
+
+#added a reference line
+plt.axhline(0, color='red', linestyle='--', linewidth=1)
+#added title and axis
+plt.title('LASSO Coefs for each fold', fontsize=14)
+plt.xlabel('Features', fontsize=12)
+plt.ylabel('Coefficient Value', fontsize=12)
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.show()
+```
+
+
+Finding the highest average value for each feature
+```{python}
+mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
+mean_coefs.head(10)  
+```
+Finding the features that were used the most often
+```{python}
+non_zero_counts = (coef_df != 0).sum()
+non_zero_counts.sort_values(ascending=False).head(5)
+```
+
+
 ## Results
 
 ### Key Findings
@@ -153,14 +317,14 @@ Using both techniques allowed us to compare the model’s performance on a speci
     -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
 -   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
     -   Assess which variables are most predictive.
-
+-   **Model 3**: LASSO regression 
+    -   Assess which features are the best/worst at predicting Final_Points.
+    
+    
 ## Discussion
 
 ...
 
-### Summary of Findings
-
-...
 
 ### Limitations
 
