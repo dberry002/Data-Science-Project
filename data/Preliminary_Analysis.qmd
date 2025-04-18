@@ -19,7 +19,7 @@ Can a team's performance metrics after the first half of the English Premier Lea
 
 ### Background and Motivation
 
-The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome.There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season.By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
+The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome. There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season. By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
 
 ### Data Description
 
@@ -74,14 +74,14 @@ library(dplyr)
 library(ggcorrplot)
 
 
-correlation_matrix <- cor(PL_data %>% select(Final_Points, Points,W, L, D, GF, GA, Dif, GPM, GAPM, ADR, GCBW, Goals_by_Win))
+correlation_matrix <- cor(PL_Data %>% select(Final_Points, Points,W, L, D, GF, GA, Dif, GPM, GAPM, ADR, GCBW, Goals_by_Win))
 ggcorrplot(correlation_matrix, lab = TRUE, type = "lower")
 ```
 
 The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points It clearly shows that goal differential (Dif), midseason points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.
 
 ```{r}
-ggplot(PL_data, aes(x = GAPM, y = Final_Points)) +
+ggplot(PL_Data, aes(x = GAPM, y = Final_Points)) +
   geom_point(color = "blue") +
   geom_smooth(method = "lm", color = "red") +
   labs(title = "Points vs. Goals Against Per Match",
@@ -99,9 +99,16 @@ Based on the heat map, we selected variables for our linear regression model tha
 We created this simple linear regression model using only goal differential (Diff) to serve as a baseline. It allows us to evaluate the individual predictive strength of one key variable and compare it to more complex models with multiple predictors. The goal is to assess how much additional accuracy is gained by incorporating other performance metrics like Goals Against and Win Percentage.
 
 ```{r}
+
+
+# Split into training and testing sets (75% train, 25% test)
+set.seed(42)
+train_index <- createDataPartition(df_model$Final_Points, p = 0.75, list = FALSE)
+train_data <- df_model[train_index, ]
+test_data <- df_model[-train_index, ]
+
 # Simple linear regression
 simple_model <- lm(Final_Points ~ Dif, data = train_data)
-
 summary(simple_model)
 
 ```
@@ -121,12 +128,6 @@ X <- PL_data[, c("Dif", "GA", "Win_Percentage")]
 
 # Combine X and y into one data frame
 df_model <- data.frame(Final_Points = y, X)
-
-# Split into training and testing sets (75% train, 25% test)
-set.seed(42)
-train_index <- createDataPartition(df_model$Final_Points, p = 0.75, list = FALSE)
-train_data <- df_model[train_index, ]
-test_data <- df_model[-train_index, ]
 
 # Fit linear regression model
 model <- lm(Final_Points ~ Dif + GA + Win_Percentage, data = train_data)
@@ -172,9 +173,10 @@ Along with this, we created a simple linear model before it so we could compare 
 
 ## Model 3: LASSO Regression for Feature Importance
 
-Loading Data in
+Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. 
 
-```{python}
+```{python, warning=FALSE}
+# Loading packages in
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -184,13 +186,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import make_column_transformer
 from sklearn.model_selection import cross_validate, GroupKFold
 from sklearn.linear_model import LinearRegression, RidgeCV, ElasticNetCV
-```
 
-X and Y Creation
 
-```{python}
+# reading in csv
 PL_data = pd.read_csv("PL_data.csv")
 
+# dropping nan and irrelevant cols
 PL_data = PL_data.drop(columns=['Pos','#']) 
 #defining y var
 y = PL_data['Final_Points']
@@ -200,37 +201,27 @@ categorical_features = ['team_category']
 
 # defining x var
 X = PL_data.drop(columns=['Final_Points','Season','Team'])  
-```
 
-Initializing GroupKFold, preprocessor, and pipeline
-
-```{python}
+#initializing GroupKFold
 group_kfold = GroupKFold(n_splits=5)
 
-# preprocessor
+# initializing preprocessor
 preprocessor = make_column_transformer(
     (OneHotEncoder(), categorical_features),
     (StandardScaler(), X.select_dtypes(include=np.number).columns)
 )
 
-#pipeline function 
+# initializing pipeline function 
 def make_pipeline(estimator):
     return Pipeline([
         ('preprocessor', preprocessor),
         ('estimator', estimator)
     ])
-
-```
-
-LASSO model creation
-
-```{python}
-#initializing lasso model
+    
+# Creating the Lasso Pipeline
 lasso_pipe = make_pipeline(ElasticNetCV(alphas=np.logspace(-3, 3, 100), l1_ratio=1, max_iter=20000))
-```
 
-```{python, warning=FALSE}
-
+# writing the function for cv
 def cv_model(pipeline):
     cv_mod = cross_validate(
         estimator=pipeline,
@@ -249,7 +240,10 @@ cv_lasso = cv_model(lasso_pipe)
 
 #example of test score output for OLS
 print(cv_lasso['test_score'])
+
 ```
+
+
 
 ```{python, warning=FALSE}
 cv_lasso = cv_model(lasso_pipe)
@@ -258,12 +252,14 @@ mse_lasso = cv_lasso['test_score'].mean()
 ```
 
 Average MSE for the models
-
 ```{python}
 mse_lasso = cv_lasso['test_score'].mean()
 print(mse_lasso)
 ```
+Since we are predicting total season points, this implies that the average for our LASSO model's predictions are off by about 4 points per season. 
 
+
+Now we will build a DF to specifically show the importance of each of these features. 
 ```{python}
 
 pd.set_option('display.max_columns', None) 
@@ -284,6 +280,7 @@ coef_df = pd.DataFrame(
 coef_df.head()
 
 ```
+As seen from above a bunch of the less important features get zero'd out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than ADR. 
 
 ```{python}
 plt.figure(figsize=(12, 6))
@@ -301,24 +298,39 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
 ```
+From this strip plot it becomes clear that first half points in a season do the best job at predicting the end of season points. However it is not quite clear what is the second of third best. 
 
-Finding the highest average value for each feature
 
+
+We will now find the top 10 features
 ```{python}
 mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
 mean_coefs.head(10)  
 ```
+Though first half of the season points and by far the best predictors, stats like Losses, ADR, and Goals Against are also quite predictive as well. 
 
-Finding the features that were used the most often
 
+Now lets look at which features were zero'd out the least
 ```{python}
 non_zero_counts = (coef_df != 0).sum()
 non_zero_counts.sort_values(ascending=False).head(5)
 ```
 
+
 ## Results
 
-### Key Findings
+### Statistical Models
+
+-   **Model 1**: Simple linear regression of `Final_Points` on `Diff`.
+    -   Equation: `Final_Points = a + b * Diff`.
+    -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
+-   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
+    -   Assess which variables are most predictive.
+-   **Model 3**: LASSO regression
+    -   Assess which features are the best/worst at predicting Final_Points.
+
+
+### Key Findings of Multiple Linear Regression Model
 
 To evaluate the performance of our multiple linear regression model predicting Final_Points, we used two complementary validation techniques: a traditional train/test split and 10-fold cross-validation.
 
@@ -344,21 +356,19 @@ We applied this formula to a team that had the following stats halfway through t
 
 Plugging these into the formula we predict that the team will finish around 62.61 points which is only 3.4 points off there actual final points which was 66. This example reinforces the model’s strength in using early-season metrics to make accurate and interpretable end-of-season predictions.
 
-### Statistical Models
+### Key Findings from the LASSO Model
 
--   **Model 1**: Simple linear regression of `Final_Points` on `Diff`.
-    -   Equation: `Final_Points = a + b * Diff`.
-    -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
--   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
-    -   Assess which variables are most predictive.
--   **Model 3**: LASSO regression
-    -   Assess which features are the best/worst at predicting Final_Points.
+The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was the mid-season points (with a coefficient of 14.48). This predictor confirmed that a team's performance during the season is the most reliable factor for how they finish. Other factors like losses, ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Wins and Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 16.2, which implies the predictions were off by 4 points per season. 
 
 ## Discussion
 
 This project set out to answer the question: Can a team’s midseason performance metrics reliably predict their final point total in the English Premier League? Based on our statistical analysis and multiple linear regression model, the answer is yes — midseason indicators such as goal differential, goals against, and win percentage showed strong predictive power. Our final model achieved an R² of 0.936 with a root mean squared error of 5.10, meaning it could predict final point totals with impressive accuracy using only a few simple inputs.
 
 From a methodological standpoint, we selected variables based on exploratory visualizations and correlation analysis. The stepwise comparison between the simple and multiple linear regression models demonstrated that including more meaningful variables significantly improved predictive accuracy. In terms of validation, we used both a 75/25 train-test split and 10-fold cross-validation, allowing us to compare performance under different scenarios. Cross-validation provided a more reliable assessment of model generalizability and gave us greater confidence in the robustness of our findings.
+
+Then for the LASSO model the findings follow suit. While current performance is the best predictor, defensive weakness significantly influences outcomes as well. Honing in on minimizing how many goals are scored on your club could prove to be helpful in boosting end of season points. Additionally while LASSO's feature selection simplifies the model, excluded variables like Win Percentage can still be a great predictor in the multiple regression.
+
+Both modelling approaches show that mid-season performance strongly predicts final standings. The multiple regression quantifies how metrics like win percent drive success, while LASSO isolated the most impactful factors (such as showing defensive strength is crucial for maximizing points). This dual perspective can lead to actionable insight that tracking core performance provides reliable forecasts, but defensive improvements can produce rewarding outcomes.     
 
 ### Limitations
 
