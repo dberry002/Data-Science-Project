@@ -99,7 +99,18 @@ Based on the heat map, we selected variables for our linear regression model tha
 We created this simple linear regression model using only goal differential (Diff) to serve as a baseline. It allows us to evaluate the individual predictive strength of one key variable and compare it to more complex models with multiple predictors. The goal is to assess how much additional accuracy is gained by incorporating other performance metrics like Goals Against and Win Percentage.
 
 ```{r}
+library(caret)      
+library(Metrics)      
+library(ggplot2)
 
+# Target variable
+y <- PL_Data$Final_Points
+
+# Predictors
+X <- PL_Data[, c("Dif", "GA", "Win_Percentage")]
+
+# Combine X and y into one data frame
+df_model <- data.frame(Final_Points = y, X)
 
 # Split into training and testing sets (75% train, 25% test)
 set.seed(42)
@@ -116,18 +127,6 @@ summary(simple_model)
 ## Model 2: Multiple Linear Regression
 
 ```{r}
-library(caret)      
-library(Metrics)      
-library(ggplot2)
-
-# Target variable
-y <- PL_data$Final_Points
-
-# Predictors
-X <- PL_data[, c("Dif", "GA", "Win_Percentage")]
-
-# Combine X and y into one data frame
-df_model <- data.frame(Final_Points = y, X)
 
 # Fit linear regression model
 model <- lm(Final_Points ~ Dif + GA + Win_Percentage, data = train_data)
