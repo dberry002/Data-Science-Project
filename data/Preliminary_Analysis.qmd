@@ -2,13 +2,20 @@
 title: "Preliminary Analysis"
 author: "Aiden Santoro and Daniel Berry"
 date: "April 17, 2025"
-format: html
+format: pdf
 ---
 
 ## Introduction and Data
 
-```{r}
+```{r Reading In Data, message=FALSE, warning=FALSE}
 library(readr)
+library(ggcorrplot)
+library(dplyr)
+library(caret)      
+library(Metrics)      
+library(ggplot2)
+
+
 PL_Data <- read_csv("PL_data.csv")
 head(PL_Data)
 ```
@@ -67,25 +74,75 @@ For these specific data sets there was no missing information but there were a f
 
 ### Key Visualizations (Reuse from EDA)
 
-```{r, fig.width=7, fig.height=7, warning = FALSE}
-library(ggplot2)
-library(readr)
+```{r Column Renaming}
+# We want to make sure an audience that is not familiar with sports/soccer terms understand what are variables stand for. So renaming the columns is good practice to do this:
+
+PL_Data <- PL_Data %>%
+  rename(Differential = Dif, Goals_For = GF, Goals_Against = GA, Goals_Per_Match = GPM, Goals_Against_Per_Match = GAPM, Attack_Defense_Ratio = ADR, Goals_Against_By_Wins = GCBW)
+
+
+```
+
+```{r Correlation Matrix, fig.width=7, fig.height=7, warning = FALSE}
+
+correlation_matrix <- cor(PL_Data %>% select(
+  Final_Points, Points, W, L, D, Goals_For, Goals_Against,
+  Differential, Goals_Per_Match, Goals_Against_Per_Match,
+  Attack_Defense_Ratio, Goals_Against_By_Wins, Goals_by_Win
+))
+
+ggcorrplot(
+  correlation_matrix,
+  lab = TRUE,
+  type = "lower",
+  lab_size = 3.5,
+  tl.cex = 10,
+  tl.srt = 45,           # Rotate text
+  colors = c("blue", "white", "red"),
+  ggtheme = theme_minimal()
+) +
+  labs(
+    title = "Heatmap of Midseason Metrics and Final Points",
+    subtitle = "Red: strong positive correlation; Blue: strong negative correlation"
+  ) +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 10)
+  )
+
+```
+
+```{r}
+library(tidyr)
 library(dplyr)
-library(ggcorrplot)
+
+# Convert correlation matrix into long format
+cor_table <- as.data.frame(as.table(correlation_matrix)) %>%
+  rename(
+    Variable1 = Var1,
+    Variable2 = Var2,
+    Correlation = Freq
+  ) %>%
+  filter(Variable1 != Variable2)  
+
+cor_table <- cor_table %>%
+  mutate(Correlation = round(Correlation, 2))
+
+print(cor_table)
 
 
-correlation_matrix <- cor(PL_Data %>% select(Final_Points, Points,W, L, D, GF, GA, Dif, GPM, GAPM, ADR, GCBW, Goals_by_Win))
-ggcorrplot(correlation_matrix, lab = TRUE, type = "lower")
 ```
 
 The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points It clearly shows that goal differential (Dif), midseason points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.
 
 ```{r}
-ggplot(PL_Data, aes(x = GAPM, y = Final_Points)) +
+ggplot(PL_Data, aes(x = Goals_Against_Per_Match, y = Final_Points)) +
   geom_point(color = "blue") +
   geom_smooth(method = "lm", color = "red") +
   labs(title = "Points vs. Goals Against Per Match",
-       x = "Goals Against Per Match (GAPM)",
+       x = "Goals Against Per Match (GPM)",
        y = "Points") +
   theme_minimal()
 ```
@@ -99,15 +156,11 @@ Based on the heat map, we selected variables for our linear regression model tha
 We created this simple linear regression model using only goal differential (Diff) to serve as a baseline. It allows us to evaluate the individual predictive strength of one key variable and compare it to more complex models with multiple predictors. The goal is to assess how much additional accuracy is gained by incorporating other performance metrics like Goals Against and Win Percentage.
 
 ```{r}
-library(caret)      
-library(Metrics)      
-library(ggplot2)
-
 # Target variable
 y <- PL_Data$Final_Points
 
 # Predictors
-X <- PL_Data[, c("Dif", "GA", "Win_Percentage")]
+X <- PL_Data[, c("Differential", "Goals_Against", "Win_Percentage")]
 
 # Combine X and y into one data frame
 df_model <- data.frame(Final_Points = y, X)
@@ -119,7 +172,7 @@ train_data <- df_model[train_index, ]
 test_data <- df_model[-train_index, ]
 
 # Simple linear regression
-simple_model <- lm(Final_Points ~ Dif, data = train_data)
+simple_model <- lm(Final_Points ~ Differential, data = train_data)
 summary(simple_model)
 
 ```
@@ -129,7 +182,7 @@ summary(simple_model)
 ```{r}
 
 # Fit linear regression model
-model <- lm(Final_Points ~ Dif + GA + Win_Percentage, data = train_data)
+model <- lm(Final_Points ~ Differential + Goals_Against + Win_Percentage, data = train_data)
 
 
 summary(model)
@@ -147,14 +200,13 @@ cat("RMSE:", round(rmse_val, 2), "\n")
 ```
 
 ```{r}
-library(caret)
 
 # training control with 10-fold CV
 train_control <- trainControl(method = "cv", number = 10)
 
 # Cross-Validation
 cv_model <- train(
-  Final_Points ~ Dif + GA + Win_Percentage,
+  Final_Points ~ Differential + Goals_Against + Win_Percentage,
   data = df_model,
   method = "lm",
   trControl = train_control
@@ -162,6 +214,10 @@ cv_model <- train(
 
 print(cv_model)
 
+```
+
+```{r}
+plot(model, which = 1)  # Residuals vs Fitted
 ```
 
 ### Justification for Methods
@@ -172,7 +228,7 @@ Along with this, we created a simple linear model before it so we could compare 
 
 ## Model 3: LASSO Regression for Feature Importance
 
-Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. 
+Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression.
 
 ```{python, warning=FALSE}
 # Loading packages in
@@ -242,8 +298,6 @@ print(cv_lasso['test_score'])
 
 ```
 
-
-
 ```{python, warning=FALSE}
 cv_lasso = cv_model(lasso_pipe)
 
@@ -251,19 +305,21 @@ mse_lasso = cv_lasso['test_score'].mean()
 ```
 
 Average MSE for the models
+
 ```{python}
 mse_lasso = cv_lasso['test_score'].mean()
 print(mse_lasso)
 ```
-Since we are predicting total season points, this implies that the average for our LASSO model's predictions are off by about 4 points per season. 
 
+Since we are predicting total season points, this implies that the average for our LASSO model's predictions are off by about 4 points per season.
 
-Now we will build a DF to specifically show the importance of each of these features. 
+Now we will build a DF to specifically show the importance of each of these features.
+
 ```{python}
 
 pd.set_option('display.max_columns', None) 
 
-numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Points', 'GPM', 'GAPM',
+numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Points', 'Goals_Per_Match', 'Goals_Against_Per_Match',
     'Win_Percentage', 'Loss_Percentage', 'Draw_Percentage', 
     'Goals_by_Win', 'GCBW', 'ADR']
                    
@@ -279,7 +335,8 @@ coef_df = pd.DataFrame(
 coef_df.head()
 
 ```
-As seen from above a bunch of the less important features get zero'd out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than ADR. 
+
+As seen from above a bunch of the less important features get zero'd out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than ADR.
 
 ```{python}
 plt.figure(figsize=(12, 6))
@@ -297,24 +354,24 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
 ```
-From this strip plot it becomes clear that first half points in a season do the best job at predicting the end of season points. However it is not quite clear what is the second of third best. 
 
-
+From this strip plot it becomes clear that first half points in a season do the best job at predicting the end of season points. However it is not quite clear what is the second of third best.
 
 We will now find the top 10 features
+
 ```{python}
 mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
 mean_coefs.head(10)  
 ```
-Though first half of the season points and by far the best predictors, stats like Losses, ADR, and Goals Against are also quite predictive as well. 
 
+Though first half of the season points and by far the best predictors, stats like Losses, ADR, and Goals Against are also quite predictive as well.
 
 Now lets look at which features were zero'd out the least
+
 ```{python}
 non_zero_counts = (coef_df != 0).sum()
 non_zero_counts.sort_values(ascending=False).head(5)
 ```
-
 
 ## Results
 
@@ -328,7 +385,6 @@ non_zero_counts.sort_values(ascending=False).head(5)
 -   **Model 3**: LASSO regression
     -   Assess which features are the best/worst at predicting Final_Points.
 
-
 ### Key Findings of Multiple Linear Regression Model
 
 To evaluate the performance of our multiple linear regression model predicting Final_Points, we used two complementary validation techniques: a traditional train/test split and 10-fold cross-validation.
@@ -341,9 +397,7 @@ Using both techniques allowed us to compare the model’s performance on a speci
 
 The following is the multiple regression formula:
 
-$$
-\text{Final_Points} = 37.39 + 0.31 \times \text{Diff} - 0.31 \times \text{GA} + 60.34 \times \text{Win_Percentage}
-$$
+**Final_Points = 37.39 + 0.31 × Diff – 0.31 × GA + 60.34 × Win_Percentage**
 
 We applied this formula to a team that had the following stats halfway through the season:
 
@@ -357,7 +411,7 @@ Plugging these into the formula we predict that the team will finish around 62.6
 
 ### Key Findings from the LASSO Model
 
-The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was the mid-season points (with a coefficient of 14.48). This predictor confirmed that a team's performance during the season is the most reliable factor for how they finish. Other factors like losses, ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Wins and Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 16.2, which implies the predictions were off by 4 points per season. 
+The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was the mid-season points (with a coefficient of 14.48). This predictor confirmed that a team's performance during the season is the most reliable factor for how they finish. Other factors like losses, ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Wins and Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 16.2, which implies the predictions were off by 4 points per season.
 
 ## Discussion
 
@@ -367,7 +421,7 @@ From a methodological standpoint, we selected variables based on exploratory vis
 
 Then for the LASSO model the findings follow suit. While current performance is the best predictor, defensive weakness significantly influences outcomes as well. Honing in on minimizing how many goals are scored on your club could prove to be helpful in boosting end of season points. Additionally while LASSO's feature selection simplifies the model, excluded variables like Win Percentage can still be a great predictor in the multiple regression.
 
-Both modelling approaches show that mid-season performance strongly predicts final standings. The multiple regression quantifies how metrics like win percent drive success, while LASSO isolated the most impactful factors (such as showing defensive strength is crucial for maximizing points). This dual perspective can lead to actionable insight that tracking core performance provides reliable forecasts, but defensive improvements can produce rewarding outcomes.     
+Both modelling approaches show that mid-season performance strongly predicts final standings. The multiple regression quantifies how metrics like win percent drive success, while LASSO isolated the most impactful factors (such as showing defensive strength is crucial for maximizing points). This dual perspective can lead to actionable insight that tracking core performance provides reliable forecasts, but defensive improvements can produce rewarding outcomes.
 
 ### Limitations
 
