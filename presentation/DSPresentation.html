@@ -409,22 +409,201 @@ By: Daniel and Aiden
 
 <section id="model-1-simple-linear-regression" class="title-slide slide level1 center">
 <h1>Model 1: Simple Linear Regression</h1>
+<p>First wanted to create a simple linear regression model to:</p>
+<ol type="1">
+<li>Simplicity</li>
+<li>Baseline Comparison</li>
+<li>Strong Predictive Power Expected</li>
+</ol>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Final_Points ~ Differential, data = train_data)
 
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-17.7428  -4.5627  -0.6634   4.1808  12.5676 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  52.06270    0.76481   68.07   &lt;2e-16 ***
+Differential  1.09242    0.05021   21.76   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 6.664 on 74 degrees of freedom
+Multiple R-squared:  0.8648,    Adjusted R-squared:  0.863 
+F-statistic: 473.4 on 1 and 74 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
 </section>
 
 <section id="m1-findings" class="title-slide slide level1 center">
 <h1>M1 Findings:</h1>
-
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<caption>Simple Linear Regression Results</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">52.063</td>
+<td style="text-align: right;">0.765</td>
+<td style="text-align: right;">68.073</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Differential</td>
+<td style="text-align: right;">1.092</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">21.758</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Residual Standard Error</td>
+<td style="text-align: left;">6.664</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Multiple R-squared</td>
+<td style="text-align: left;">0.865</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Adjusted R-squared</td>
+<td style="text-align: left;">0.863</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">F-statistic</td>
+<td style="text-align: left;">473.4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">p-value</td>
+<td style="text-align: left;">&lt; 2.2e-16</td>
+</tr>
+</tbody>
+</table>
 </section>
 
 <section id="model-2-multiple-linear-regression" class="title-slide slide level1 center">
 <h1>Model 2: Multiple Linear Regression</h1>
-
+<p>Next we wanted to use a multiple linear regression model to:</p>
+<ol type="1">
+<li>Capture Multiple Influences</li>
+<li>Improve Prediction Accuracy</li>
+<li>Quantify Individual Contributions</li>
+</ol>
 </section>
 
-<section id="m2-findings" class="title-slide slide level1 center">
-<h1>M2 Findings:</h1>
+<section id="model-summary" class="title-slide slide level1 center">
+<h1>Model Summary:</h1>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Residual Standard Error</td>
+<td style="text-align: left;">4.803</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Multiple R-squared</td>
+<td style="text-align: left;">0.932</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Adjusted R-squared</td>
+<td style="text-align: left;">0.929</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">F-statistic</td>
+<td style="text-align: left;">327.3 (df = 3, 72)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">p-value</td>
+<td style="text-align: left;">&lt; 2.2e-16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">R² Score (test set)</td>
+<td style="text-align: left;">0.92</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RMSE (test set)</td>
+<td style="text-align: left;">5.79</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Final_Points ~ Differential + Goals_Against + Win_Percentage, 
+    data = train_data)
 
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.7128  -2.4906   0.1933   2.8244   8.6254 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)     37.3884     4.3500   8.595 1.19e-12 ***
+Differential     0.3114     0.1087   2.866  0.00545 ** 
+Goals_Against   -0.3108     0.1378  -2.255  0.02715 *  
+Win_Percentage  60.3391     7.2390   8.335 3.63e-12 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.803 on 72 degrees of freedom
+Multiple R-squared:  0.9317,    Adjusted R-squared:  0.9288 
+F-statistic: 327.3 on 3 and 72 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>R² Score: 0.92 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>RMSE: 5.79 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear Regression 
+
+100 samples
+  3 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 89, 92, 90, 90, 88, 90, ... 
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  5.096393  0.9364352  3.948435
+
+Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
+</div>
+</div>
 </section>
 
 <section id="model-3-lasso-regression" class="title-slide slide level1 center">

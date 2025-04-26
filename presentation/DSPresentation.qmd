@@ -25,6 +25,8 @@ library(dplyr)
 library(caret)      
 library(Metrics)      
 library(ggplot2)
+library(broom)
+library(knitr)
 
 set.seed(1234)
 ```
@@ -155,11 +157,121 @@ ggplot(PL_Data, aes(x = Goals_Against_Per_Match, y = Final_Points)) +
 
 # Model 1: Simple Linear Regression
 
+First wanted to create a simple linear regression model to:
+
+1.  Simplicity
+2.  Baseline Comparison
+3.  Strong Predictive Power Expected
+
+```{r Model 1}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Target variable
+y <- PL_Data$Final_Points
+
+# Predictors
+X <- PL_Data[, c("Differential", "Goals_Against", "Win_Percentage")]
+
+# Combine X and y into one data frame
+df_model <- data.frame(Final_Points = y, X)
+
+# Split into training and testing sets (75% train, 25% test)
+set.seed(42)
+train_index <- createDataPartition(df_model$Final_Points, p = 0.75, list = FALSE)
+train_data <- df_model[train_index, ]
+test_data <- df_model[-train_index, ]
+
+# Simple linear regression
+simple_model <- lm(Final_Points ~ Differential, data = train_data)
+summary(simple_model)
+```
+
 # M1 Findings:
+
+```{r simple-model-table}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Run the simple model
+simple_model <- lm(Final_Points ~ Differential, data = train_data)
+
+# Tidy the model output
+tidy_simple_model <- tidy(simple_model)
+
+# Display it nicely
+kable(tidy_simple_model, digits = 3, caption = "Simple Linear Regression Results")
+
+
+```
+
+| Metric                  | Value      |
+|:------------------------|:-----------|
+| Residual Standard Error | 6.664      |
+| Multiple R-squared      | 0.865      |
+| Adjusted R-squared      | 0.863      |
+| F-statistic             | 473.4      |
+| p-value                 | \< 2.2e-16 |
 
 # Model 2: Multiple Linear Regression
 
-# M2 Findings:
+Next we wanted to use a multiple linear regression model to:
+
+1.  Capture Multiple Influences
+2.  Improve Prediction Accuracy
+3.  Quantify Individual Contributions
+
+# Model Summary:
+
+| Metric                  | Value              |
+|:------------------------|:-------------------|
+| Residual Standard Error | 4.803              |
+| Multiple R-squared      | 0.932              |
+| Adjusted R-squared      | 0.929              |
+| F-statistic             | 327.3 (df = 3, 72) |
+| p-value                 | \< 2.2e-16         |
+| R² Score (test set)     | 0.92               |
+| RMSE (test set)         | 5.79               |
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# Fit linear regression model
+model <- lm(Final_Points ~ Differential + Goals_Against + Win_Percentage, data = train_data)
+
+
+summary(model)
+
+# Predict on test data
+predictions <- predict(model, newdata = test_data)
+
+r2 <- R2(predictions, test_data$Final_Points)
+rmse_val <- rmse(test_data$Final_Points, predictions)
+
+cat("R² Score:", round(r2, 3), "\n")
+cat("RMSE:", round(rmse_val, 2), "\n")
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# training control with 10-fold CV
+train_control <- trainControl(method = "cv", number = 10)
+
+# Cross-Validation
+cv_model <- train(
+  Final_Points ~ Differential + Goals_Against + Win_Percentage,
+  data = df_model,
+  method = "lm",
+  trControl = train_control
+)
+
+print(cv_model)
+```
 
 # Model 3: Lasso Regression
 
@@ -171,4 +283,4 @@ ggplot(PL_Data, aes(x = Goals_Against_Per_Match, y = Final_Points)) +
 
 # Future Works:
 
-#  
+# 
