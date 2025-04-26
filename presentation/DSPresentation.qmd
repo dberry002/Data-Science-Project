@@ -1,0 +1,174 @@
+---
+title: "Predicting Premier League Final Standings"
+author: "By: Daniel and Aiden"
+execute:
+  echo: true
+format:
+  revealjs:
+    theme: default 
+editor: 
+  markdown: 
+    wrap: 72
+engine: knitr
+---
+
+```{r packages}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+library(reticulate)
+library(openintro)
+library(readr)
+library(ggcorrplot)
+library(dplyr)
+library(caret)      
+library(Metrics)      
+library(ggplot2)
+
+set.seed(1234)
+```
+
+# Research Question
+
+**Can a team's performance metrics after the first half of the English
+Premier League season reliably predict their final standings?**
+
+::: center
+![](StadiumImage.jpg){fig-align="center" width="275"}
+:::
+
+# Motivation
+
+-   The EPL is one of the most competitive soccer leagues in the world.
+
+-   Early-season performance often hints at final outcomes
+
+-   Stronger predictions can help teams and analyst make strategic mid
+    season decisions.
+
+# Data Description
+
+**Source:** worldfootball.net
+
+**Collection:** Manual copy into excel, feature engineering, saved as
+CSV.
+
+**Scope:** 5 Premier League Seasons
+
+**Outcome Variable:** Final_Points
+
+**Explanatory Variables:** Goals_For, Goals_Against, Differential, Win
+Percentage, and many more.
+
+# Data Cleaning
+
+1.  Removed irrelevant columns (e.g.,, logos).
+
+2.  Parsed goal differential into separate Goals_For and Goals_Against
+    columns.
+
+3.  Created new variables: GPM, GAPM, ADR, Goals_By_Win.
+
+4.  Categorized teams: Aggressive, Dominant, Defensive, and Under
+    performers.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# First for our slides it is important to import the data again and set it up the way it was in our analysis. Just made a copy of the data set to make it easier to load our models.
+PL_Data <- read_csv("PL_data2.csv")
+
+```
+
+```{r Column Renaming}
+#| echo: false
+#| message: false
+#| warning: false
+# We want to make sure an audience that is not familiar with sports/soccer terms understand what are variables stand for. So renaming the columns is good practice to do this. 
+
+PL_Data <- PL_Data %>%
+  rename(Differential = Dif, Goals_For = GF, Goals_Against = GA, Goals_Per_Match = GPM, Goals_Against_Per_Match = GAPM, Attack_Defense_Ratio = ADR, Goals_Against_By_Wins = GCBW)
+
+# Also hiding this code but talked about it in the presentation.
+```
+
+# Variable Correlations
+
+```{r Correlation Matrix, fig.width=10, fig.height=10, warning = FALSE}
+#| echo: false
+#| message: false
+#| warning: false
+correlation_matrix <- cor(PL_Data %>% select(
+  Final_Points, Points, W, L, D, Goals_For, Goals_Against,
+  Differential, Goals_Per_Match, Goals_Against_Per_Match,
+  Attack_Defense_Ratio, Goals_Against_By_Wins, Goals_by_Win
+))
+
+ggcorrplot(
+  correlation_matrix,
+  lab = TRUE,
+  type = "lower",
+  lab_size = 3.5,
+  tl.cex = 10,
+  tl.srt = 45,           # Rotate text
+  colors = c("blue", "white", "red"),
+  ggtheme = theme_minimal()
+) +
+  labs(
+    title = "Heatmap of Midseason Metrics and Final Points",
+    subtitle = "Red: strong positive correlation; Blue: strong negative correlation"
+  ) +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 10)
+  )
+
+```
+
+# Relationship Between Variables
+
+-   As GAPM increases—meaning teams are conceding more goals per
+    match—their final point totals tend to decrease.
+
+    ```{r}
+    #| echo: false
+    #| fig-align: center
+    knitr::include_graphics("Linear.png")
+    ```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+ggplot(PL_Data, aes(x = Goals_Against_Per_Match, y = Final_Points)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Points vs. Goals Against Per Match",
+       x = "Goals Against Per Match (GPM)",
+       y = "Points") +
+  theme_minimal()
+```
+
+# Model 1: Simple Linear Regression
+
+# M1 Findings:
+
+# Model 2: Multiple Linear Regression
+
+# M2 Findings:
+
+# Model 3: Lasso Regression
+
+# M3 Findings:
+
+# Discuss Our Findings all together:
+
+# Limitations:
+
+# Future Works:
+
+#  

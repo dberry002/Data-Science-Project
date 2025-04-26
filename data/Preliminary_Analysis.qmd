@@ -180,7 +180,8 @@ summary(simple_model)
 ## Model 2: Multiple Linear Regression
 
 ```{r}
-
+library(caret)      
+library(Metrics) 
 # Fit linear regression model
 model <- lm(Final_Points ~ Differential + Goals_Against + Win_Percentage, data = train_data)
 
