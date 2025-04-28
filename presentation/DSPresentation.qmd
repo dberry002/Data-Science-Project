@@ -275,12 +275,139 @@ print(cv_model)
 
 # Model 3: Lasso Regression
 
+-   Used for feature selection and reducing overfitting
+
+-   Helps identify the most important predictors
+
+-   Uses cross-validation with GroupKFold to prevent data leakage across
+    seasons
+
+Average Mean Squared Error (MSE): -16.179
+
+-   This means predictions were off by about 4 points per season
+
+# Top Predictors from Lasso:
+
+1.  Mid-season points (14.48)
+
+-   For every 1 standard deviation increase in mid-season points, final
+    points increase by 14.48.
+
+2.  Losses (-5.64)
+
+3.  Attack-Defense Ratio (3.70)
+
+4.  Goals Against (-1.76)
+
+The inputs were standardized so an interpration if the
+
+## Less Important Features:
+
+-   Team categories (Aggressive, Defensive, etc.)
+
+-   Raw counts of Wins and Goals Scored
+
+-   Draw percentage (frequently zeroed out)
+
 # M3 Findings:
 
-# Discuss Our Findings all together:
+-   **Feature Selection**: LASSO automatically zeroed out less important
+    predictors, focusing on mid-season points, losses, and defensive
+    metrics.
+-   **Defensive Emphasis**: Goals Against and Attack-Defense Ratio were
+    consistently important, confirming that defensive performance is
+    crucial for final standings.
+-   **GroupKFold Cross-Validation**: Using season-based grouping
+    prevented data leakage across seasons, ensuring a more robust model
+    evaluation.
+
+# M3 Findings Cont. 
+
+-   **Performance**: With an average error of about 4 points per team
+    per season, the LASSO model offers reliable predictions while
+    maintaining interpretability.
+-   **Variable Consistency**: The variables that maintained non-zero
+    coefficients across all cross-validation folds are the most reliable
+    predictors for future seasons.
+
+# Discussion:
+
+## Key Insights Across All Models:
+
+-   **Strong Predictive Power**: Mid-season metrics explain over 90% of
+    variance in final standings
+
+-   **Defensive Performance Matters**: Goals Against is consistently
+    important in all models
+
+-   **Model Progression**:
+
+    -   Simple Linear Model (R² = 0.865)
+
+    -   Multiple Regression (R² = 0.936, RMSE = 5.10)
+
+    -   Lasso Regression (MSE ≈ 16.2, \~4 points off per team)
+
+## Practical Application:
+
+Our multiple regression formula: **Final_Points = 37.39 + 0.31 × Diff –
+0.31 × GA + 60.34 × Win_Percentage**
+
+For a mid-table team with:
+
+-   Goal Differential = 6
+
+-   Goals Against = 27
+
+-   Win Percentage = 0.526 (10/19 wins)
+
+**Predicted points: 62.61** (Actual: 66, only 3.4 points off)
 
 # Limitations:
 
+-   **Sample Size**: Only 5 seasons limits statistical power
+-   **Mid-season Transfers**: No accounting for January transfer window
+    impacts
+-   **External Factors**: Injuries, managerial changes not considered
+-   **Competition Dynamics**: Different competitive landscapes each
+    season
+-   **Strength of Schedule**: Remaining fixture difficulty not
+    incorporated
+-   **Pandemic Impact**: COVID-19 disruptions in 2019-2020 and 2020-2021
+    seasons
+
 # Future Works:
 
-# 
+-   **Additional Variables**:
+
+    -   Expected Goals (xG) metrics
+
+    -   Possession percentages
+
+    -   Distance covered
+
+    -   Player availability indices
+
+-   **Expanded Data**:
+
+    -   More seasons from Premier League
+
+    -   Comparative analysis with other top European leagues
+
+# Future Works Cont. 
+
+-   **Advanced Modeling**:
+
+    -   Time-series forecasting for in-season updates
+
+    -   Position-specific models (Top 4, Mid-table, Relegation zone)
+
+    -   Machine learning approaches for non-linear relationships
+
+<!-- -->
+
+-   **Practical Applications**:
+
+    -   Interactive prediction tools for fans and analysts
+
+    -   Integration with betting market data

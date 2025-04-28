@@ -608,31 +608,135 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
 
 <section id="model-3-lasso-regression" class="title-slide slide level1 center">
 <h1>Model 3: Lasso Regression</h1>
-
+<ul>
+<li><p>Used for feature selection and reducing overfitting</p></li>
+<li><p>Helps identify the most important predictors</p></li>
+<li><p>Uses cross-validation with GroupKFold to prevent data leakage across seasons</p></li>
+</ul>
+<p>Average Mean Squared Error (MSE): -16.179</p>
+<ul>
+<li>This means predictions were off by about 4 points per season</li>
+</ul>
 </section>
 
+<section>
+<section id="top-predictors-from-lasso" class="title-slide slide level1 center">
+<h1>Top Predictors from Lasso:</h1>
+<ol type="1">
+<li>Mid-season points (14.48)</li>
+</ol>
+<ul>
+<li>For every 1 standard deviation increase in mid-season points, final points increase by 14.48.</li>
+</ul>
+<ol start="2" type="1">
+<li><p>Losses (-5.64)</p></li>
+<li><p>Attack-Defense Ratio (3.70)</p></li>
+<li><p>Goals Against (-1.76)</p></li>
+</ol>
+<p>The inputs were standardized so an interpration if the</p>
+</section>
+<section id="less-important-features" class="slide level2">
+<h2>Less Important Features:</h2>
+<ul>
+<li><p>Team categories (Aggressive, Defensive, etc.)</p></li>
+<li><p>Raw counts of Wins and Goals Scored</p></li>
+<li><p>Draw percentage (frequently zeroed out)</p></li>
+</ul>
+</section></section>
 <section id="m3-findings" class="title-slide slide level1 center">
 <h1>M3 Findings:</h1>
-
+<ul>
+<li><strong>Feature Selection</strong>: LASSO automatically zeroed out less important predictors, focusing on mid-season points, losses, and defensive metrics.</li>
+<li><strong>Defensive Emphasis</strong>: Goals Against and Attack-Defense Ratio were consistently important, confirming that defensive performance is crucial for final standings.</li>
+<li><strong>GroupKFold Cross-Validation</strong>: Using season-based grouping prevented data leakage across seasons, ensuring a more robust model evaluation.</li>
+</ul>
 </section>
 
-<section id="discuss-our-findings-all-together" class="title-slide slide level1 center">
-<h1>Discuss Our Findings all together:</h1>
-
+<section id="m3-findings-cont." class="title-slide slide level1 center">
+<h1>M3 Findings Cont.</h1>
+<ul>
+<li><strong>Performance</strong>: With an average error of about 4 points per team per season, the LASSO model offers reliable predictions while maintaining interpretability.</li>
+<li><strong>Variable Consistency</strong>: The variables that maintained non-zero coefficients across all cross-validation folds are the most reliable predictors for future seasons.</li>
+</ul>
 </section>
 
+<section>
+<section id="discussion" class="title-slide slide level1 center">
+<h1>Discussion:</h1>
+
+</section>
+<section id="key-insights-across-all-models" class="slide level2">
+<h2>Key Insights Across All Models:</h2>
+<ul>
+<li><p><strong>Strong Predictive Power</strong>: Mid-season metrics explain over 90% of variance in final standings</p></li>
+<li><p><strong>Defensive Performance Matters</strong>: Goals Against is consistently important in all models</p></li>
+<li><p><strong>Model Progression</strong>:</p>
+<ul>
+<li><p>Simple Linear Model (R² = 0.865)</p></li>
+<li><p>Multiple Regression (R² = 0.936, RMSE = 5.10)</p></li>
+<li><p>Lasso Regression (MSE ≈ 16.2, ~4 points off per team)</p></li>
+</ul></li>
+</ul>
+</section>
+<section id="practical-application" class="slide level2">
+<h2>Practical Application:</h2>
+<p>Our multiple regression formula: <strong>Final_Points = 37.39 + 0.31 × Diff – 0.31 × GA + 60.34 × Win_Percentage</strong></p>
+<p>For a mid-table team with:</p>
+<ul>
+<li><p>Goal Differential = 6</p></li>
+<li><p>Goals Against = 27</p></li>
+<li><p>Win Percentage = 0.526 (10/19 wins)</p></li>
+</ul>
+<p><strong>Predicted points: 62.61</strong> (Actual: 66, only 3.4 points off)</p>
+</section></section>
 <section id="limitations" class="title-slide slide level1 center">
 <h1>Limitations:</h1>
-
+<ul>
+<li><strong>Sample Size</strong>: Only 5 seasons limits statistical power</li>
+<li><strong>Mid-season Transfers</strong>: No accounting for January transfer window impacts</li>
+<li><strong>External Factors</strong>: Injuries, managerial changes not considered</li>
+<li><strong>Competition Dynamics</strong>: Different competitive landscapes each season</li>
+<li><strong>Strength of Schedule</strong>: Remaining fixture difficulty not incorporated</li>
+<li><strong>Pandemic Impact</strong>: COVID-19 disruptions in 2019-2020 and 2020-2021 seasons</li>
+</ul>
 </section>
 
 <section id="future-works" class="title-slide slide level1 center">
 <h1>Future Works:</h1>
-
+<ul>
+<li><p><strong>Additional Variables</strong>:</p>
+<ul>
+<li><p>Expected Goals (xG) metrics</p></li>
+<li><p>Possession percentages</p></li>
+<li><p>Distance covered</p></li>
+<li><p>Player availability indices</p></li>
+</ul></li>
+<li><p><strong>Expanded Data</strong>:</p>
+<ul>
+<li><p>More seasons from Premier League</p></li>
+<li><p>Comparative analysis with other top European leagues</p></li>
+</ul></li>
+</ul>
 </section>
 
-<section id="section" class="title-slide slide level1 center">
-<h1></h1>
+<section id="future-works-cont." class="title-slide slide level1 center">
+<h1>Future Works Cont.</h1>
+<ul>
+<li><p><strong>Advanced Modeling</strong>:</p>
+<ul>
+<li><p>Time-series forecasting for in-season updates</p></li>
+<li><p>Position-specific models (Top 4, Mid-table, Relegation zone)</p></li>
+<li><p>Machine learning approaches for non-linear relationships</p></li>
+</ul></li>
+</ul>
+<!-- -->
+<ul>
+<li><p><strong>Practical Applications</strong>:</p>
+<ul>
+<li><p>Interactive prediction tools for fans and analysts</p></li>
+<li><p>Integration with betting market data</p></li>
+</ul></li>
+</ul>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
@@ -850,42 +954,80 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
       });
     </script>
     
+
     <script>
+
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
       // slide changes (different for each slide format).
+
       (function () {
+
         // dispatch for htmlwidgets
+
         function fireSlideEnter() {
+
           const event = window.document.createEvent("Event");
+
           event.initEvent("slideenter", true, true);
+
           window.document.dispatchEvent(event);
+
         }
+
+    
 
         function fireSlideChanged(previousSlide, currentSlide) {
+
           fireSlideEnter();
 
+    
+
           // dispatch for shiny
+
           if (window.jQuery) {
+
             if (previousSlide) {
+
               window.jQuery(previousSlide).trigger("hidden");
+
             }
+
             if (currentSlide) {
+
               window.jQuery(currentSlide).trigger("shown");
+
             }
+
           }
+
         }
+
+    
 
         // hookup for slidy
+
         if (window.w3c_slidy) {
+
           window.w3c_slidy.add_observer(function (slide_num) {
+
             // slide_num starts at position 1
+
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
           });
+
         }
 
+    
+
       })();
+
     </script>
+
+    
 
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
