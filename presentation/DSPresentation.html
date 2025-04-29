@@ -370,9 +370,9 @@ By: Daniel and Aiden
 <section id="data-cleaning" class="title-slide slide level1 center">
 <h1>Data Cleaning</h1>
 <ol type="1">
-<li><p>Removed irrelevant columns (e.g.,, logos).</p></li>
+<li><p>Removed irrelevant columns (e.g., logos).</p></li>
 <li><p>Parsed goal differential into separate Goals_For and Goals_Against columns.</p></li>
-<li><p>Created new variables: GPM, GAPM, ADR, Goals_By_Win.</p></li>
+<li><p>Created new variables: GPM, GAPM, Goals_By_Win.</p></li>
 <li><p>Categorized teams: Aggressive, Dominant, Defensive, and Under performers.</p></li>
 </ol>
 </section>
@@ -614,40 +614,45 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
 <li><p>Helps identify the most important predictors</p></li>
 <li><p>Uses cross-validation with GroupKFold to prevent data leakage across seasons</p></li>
 </ul>
-<p>Average Mean Squared Error (MSE): -16.179</p>
+<p>Average Mean Squared Error (MSE): -18.48</p>
 <ul>
 <li>This means predictions were off by about 4 points per season</li>
 </ul>
 </section>
 
+<section id="feature-importance-plot" class="title-slide slide level1 center">
+<h1>Feature Importance Plot</h1>
+
+<img data-src="DSPresentation_files/figure-revealjs/unnamed-chunk-6-1.png" width="1152" class="r-stretch"></section>
+
 <section>
 <section id="top-predictors-from-lasso" class="title-slide slide level1 center">
 <h1>Top Predictors from Lasso:</h1>
 <ol type="1">
-<li>Mid-season points (14.48)</li>
+<li>Wins (9.592635)</li>
 </ol>
 <ul>
-<li>For every 1 standard deviation increase in mid-season points, final points increase by 14.48.</li>
+<li>For every 1 standard deviation increase in Wins, final points increase by 9.592635.</li>
 </ul>
 <ol start="2" type="1">
-<li><p>Losses (-5.64)</p></li>
-<li><p>Attack-Defense Ratio (3.70)</p></li>
-<li><p>Goals Against (-1.76)</p></li>
+<li><p>Losses (-6.489302)</p></li>
+<li><p>Attack-Defense Ratio (1.299359)</p></li>
+<li><p>Goals Against (-0.491382)</p></li>
 </ol>
-<p>The inputs were standardized so an interpration if the</p>
 </section>
 <section id="less-important-features" class="slide level2">
 <h2>Less Important Features:</h2>
 <ul>
 <li><p>Team categories (Aggressive, Defensive, etc.)</p></li>
-<li><p>Raw counts of Wins and Goals Scored</p></li>
+<li><p>Raw counts of Goals Scored</p></li>
 <li><p>Draw percentage (frequently zeroed out)</p></li>
 </ul>
+<p><em>Important Note: We ran this model twice. The first time we included mid-season points, but in this iteration we excluded it due to the variable’s dominance. When it was included Wins was zeroed out as mid-season points captured the same information as wins just in a better format for predicting final wins.</em></p>
 </section></section>
 <section id="m3-findings" class="title-slide slide level1 center">
 <h1>M3 Findings:</h1>
 <ul>
-<li><strong>Feature Selection</strong>: LASSO automatically zeroed out less important predictors, focusing on mid-season points, losses, and defensive metrics.</li>
+<li><strong>Feature Selection</strong>: LASSO automatically zeroed out less important predictors, focusing on Wins, losses, and defensive metrics.</li>
 <li><strong>Defensive Emphasis</strong>: Goals Against and Attack-Defense Ratio were consistently important, confirming that defensive performance is crucial for final standings.</li>
 <li><strong>GroupKFold Cross-Validation</strong>: Using season-based grouping prevented data leakage across seasons, ensuring a more robust model evaluation.</li>
 </ul>
@@ -675,7 +680,7 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
 <ul>
 <li><p>Simple Linear Model (R² = 0.865)</p></li>
 <li><p>Multiple Regression (R² = 0.936, RMSE = 5.10)</p></li>
-<li><p>Lasso Regression (MSE ≈ 16.2, ~4 points off per team)</p></li>
+<li><p>Lasso Regression (MSE ≈ 18.48, ~4 points off per team)</p></li>
 </ul></li>
 </ul>
 </section>
@@ -729,9 +734,6 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
 <li><p>Position-specific models (Top 4, Mid-table, Relegation zone)</p></li>
 <li><p>Machine learning approaches for non-linear relationships</p></li>
 </ul></li>
-</ul>
-<!-- -->
-<ul>
 <li><p><strong>Practical Applications</strong>:</p>
 <ul>
 <li><p>Interactive prediction tools for fans and analysts</p></li>
@@ -955,42 +957,80 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
       });
     </script>
     
+
     <script>
+
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
       // slide changes (different for each slide format).
+
       (function () {
+
         // dispatch for htmlwidgets
+
         function fireSlideEnter() {
+
           const event = window.document.createEvent("Event");
+
           event.initEvent("slideenter", true, true);
+
           window.document.dispatchEvent(event);
+
         }
+
+    
 
         function fireSlideChanged(previousSlide, currentSlide) {
+
           fireSlideEnter();
 
+    
+
           // dispatch for shiny
+
           if (window.jQuery) {
+
             if (previousSlide) {
+
               window.jQuery(previousSlide).trigger("hidden");
+
             }
+
             if (currentSlide) {
+
               window.jQuery(currentSlide).trigger("shown");
+
             }
+
           }
+
         }
+
+    
 
         // hookup for slidy
+
         if (window.w3c_slidy) {
+
           window.w3c_slidy.add_observer(function (slide_num) {
+
             // slide_num starts at position 1
+
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
           });
+
         }
 
+    
+
       })();
+
     </script>
+
+    
 
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {

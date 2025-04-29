@@ -229,7 +229,7 @@ Along with this, we created a simple linear model before it so we could compare 
 
 ## Model 3: LASSO Regression for Feature Importance
 
-Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression.
+Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression. Finally I want to note that we ran this LASSO model before with the inclusion of the Points column and it dominated the feature importance, downweighting a lot of the other features present. So for our actual analysis we excluded it to make insights about other important variables that can provide insights about a club's performance.
 
 ```{python, warning=FALSE}
 # Loading packages in
@@ -256,7 +256,7 @@ y = PL_data['Final_Points']
 categorical_features = ['team_category'] 
 
 # defining x var
-X = PL_data.drop(columns=['Final_Points','Season','Team'])  
+X = PL_data.drop(columns=['Final_Points','Season','Team','Points'])  
 
 #initializing GroupKFold
 group_kfold = GroupKFold(n_splits=5)
@@ -320,7 +320,7 @@ Now we will build a DF to specifically show the importance of each of these feat
 
 pd.set_option('display.max_columns', None) 
 
-numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Points', 'Goals_Per_Match', 'Goals_Against_Per_Match',
+numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Goals_Per_Match', 'Goals_Against_Per_Match',
     'Win_Percentage', 'Loss_Percentage', 'Draw_Percentage', 
     'Goals_by_Win', 'GCBW', 'ADR']
                    
@@ -356,7 +356,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-From this strip plot it becomes clear that first half points in a season do the best job at predicting the end of season points. However it is not quite clear what is the second of third best.
+From this strip plot it becomes clear that Wins and Losses do the best job at predicting the end of season points. However it is not quite clear what is the next best.
 
 We will now find the top 10 features
 
@@ -365,7 +365,7 @@ mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
 mean_coefs.head(10)  
 ```
 
-Though first half of the season points and by far the best predictors, stats like Losses, ADR, and Goals Against are also quite predictive as well.
+Though first half of the season points were by far the best predictors, stats like Wins, Losses, ADR, and Goals Against are also quite predictive as well.
 
 Now lets look at which features were zero'd out the least
 
@@ -412,7 +412,7 @@ Plugging these into the formula we predict that the team will finish around 62.6
 
 ### Key Findings from the LASSO Model
 
-The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was the mid-season points (with a coefficient of 14.48). This predictor confirmed that a team's performance during the season is the most reliable factor for how they finish. Other factors like losses, ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Wins and Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 16.2, which implies the predictions were off by 4 points per season.
+The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was Wins and Losses. These predictors confirmed that a team's performance during the season is the most reliable factor for how they finish. Other factors like ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 18.5, which implies the predictions were off by 4 points per season.
 
 ## Discussion
 

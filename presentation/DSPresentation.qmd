@@ -284,38 +284,143 @@ print(cv_model)
 -   Uses cross-validation with GroupKFold to prevent data leakage across
     seasons
 
-Average Mean Squared Error (MSE): -16.179
+Average Mean Squared Error (MSE): -18.48
 
 -   This means predictions were off by about 4 points per season
 
+# Feature Importance Plot
+
+```{python}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Loading packages in
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_transformer
+from sklearn.model_selection import cross_validate, GroupKFold
+from sklearn.linear_model import LinearRegression, RidgeCV, ElasticNetCV
+
+
+# reading in csv
+PL_data = pd.read_csv("PL_data2.csv")
+
+# dropping nan and irrelevant cols
+PL_data = PL_data.drop(columns=['Pos','#']) 
+#defining y var
+y = PL_data['Final_Points']
+
+# identifying cat col
+categorical_features = ['team_category'] 
+
+# defining x var
+X = PL_data.drop(columns=['Final_Points','Season','Team','Points'])  
+
+#initializing GroupKFold
+group_kfold = GroupKFold(n_splits=5)
+
+# initializing preprocessor
+preprocessor = make_column_transformer(
+    (OneHotEncoder(), categorical_features),
+    (StandardScaler(), X.select_dtypes(include=np.number).columns)
+)
+
+# initializing pipeline function 
+def make_pipeline(estimator):
+    return Pipeline([
+        ('preprocessor', preprocessor),
+        ('estimator', estimator)
+    ])
+    
+# Creating the Lasso Pipeline
+lasso_pipe = make_pipeline(ElasticNetCV(alphas=np.logspace(-3, 3, 100), l1_ratio=1, max_iter=20000))
+
+# writing the function for cv
+def cv_model(pipeline):
+    cv_mod = cross_validate(
+        estimator=pipeline,
+        X=X,
+        y=y,
+        cv=group_kfold,
+        groups = PL_data['Season'],
+        scoring='neg_mean_squared_error',
+        return_estimator=True,
+        n_jobs=1
+    )
+    return cv_mod
+
+cv_lasso = cv_model(lasso_pipe)
+
+pd.set_option('display.max_columns', None) 
+
+numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Goals_Per_Match', 'Goals_Against_Per_Match',
+    'Win_Percentage', 'Loss_Percentage', 'Draw_Percentage', 
+    'Goals_by_Win', 'GCBW', 'ADR']
+                   
+team_cat__features = ['team_category_Aggressive', 'team_category_Defensive', 'team_category_Dominant', 'team_category_Underperformers']
+
+feature_names = team_cat__features + numeric_features
+
+
+coef_df = pd.DataFrame(
+    [model['estimator'].coef_ for model in cv_lasso['estimator']],
+    columns=feature_names
+)
+
+plt.figure(figsize=(12, 6))
+sns.stripplot(
+    data=coef_df
+)
+
+#added a reference line
+plt.axhline(0, color='red', linestyle='--', linewidth=1)
+#added title and axis
+plt.title('LASSO Coefs for each fold', fontsize=14)
+plt.xlabel('Features', fontsize=12)
+plt.ylabel('Coefficient Value', fontsize=12)
+_ = plt.xticks(rotation=90)
+plt.tight_layout()
+
+plt.savefig('lasso_coef_plot.png')
+None 
+```
+
 # Top Predictors from Lasso:
 
-1.  Mid-season points (14.48)
+1.  Wins (9.592635)
 
--   For every 1 standard deviation increase in mid-season points, final
-    points increase by 14.48.
+-   For every 1 standard deviation increase in Wins, final points
+    increase by 9.592635.
 
-2.  Losses (-5.64)
+2.  Losses (-6.489302)
 
-3.  Attack-Defense Ratio (3.70)
+3.  Attack-Defense Ratio (1.299359)
 
-4.  Goals Against (-1.76)
-
-The inputs were standardized so an interpration if the
+4.  Goals Against (-0.491382)
 
 ## Less Important Features:
 
 -   Team categories (Aggressive, Defensive, etc.)
 
--   Raw counts of Wins and Goals Scored
+-   Raw counts of Goals Scored
 
 -   Draw percentage (frequently zeroed out)
+
+*Important Note: We ran this model twice. The first time we included
+mid-season points, but in this iteration we excluded it due to the
+variable's dominance. When it was included Wins was zeroed out as
+mid-season points captured the same information as wins just in a better
+format for predicting final wins.*
 
 # M3 Findings:
 
 -   **Feature Selection**: LASSO automatically zeroed out less important
-    predictors, focusing on mid-season points, losses, and defensive
-    metrics.
+    predictors, focusing on Wins, losses, and defensive metrics.
 -   **Defensive Emphasis**: Goals Against and Attack-Defense Ratio were
     consistently important, confirming that defensive performance is
     crucial for final standings.
@@ -348,7 +453,7 @@ The inputs were standardized so an interpration if the
 
     -   Multiple Regression (R² = 0.936, RMSE = 5.10)
 
-    -   Lasso Regression (MSE ≈ 16.2, \~4 points off per team)
+    -   Lasso Regression (MSE ≈ 18.48, \~4 points off per team)
 
 ## Practical Application:
 
@@ -405,8 +510,6 @@ For a mid-table team with:
     -   Position-specific models (Top 4, Mid-table, Relegation zone)
 
     -   Machine learning approaches for non-linear relationships
-
-<!-- -->
 
 -   **Practical Applications**:
 
