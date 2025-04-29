@@ -65,12 +65,12 @@ Percentage, and many more.
 
 # Data Cleaning
 
-1.  Removed irrelevant columns (e.g.,, logos).
+1.  Removed irrelevant columns (e.g., logos).
 
 2.  Parsed goal differential into separate Goals_For and Goals_Against
     columns.
 
-3.  Created new variables: GPM, GAPM, ADR, Goals_By_Win.
+3.  Created new variables: GPM, GAPM, Goals_By_Win.
 
 4.  Categorized teams: Aggressive, Dominant, Defensive, and Under
     performers.
@@ -97,6 +97,8 @@ PL_Data <- PL_Data %>%
 ```
 
 # Variable Correlations
+
+These insights support our variable choices for regression models.
 
 ```{r Correlation Matrix, fig.width=10, fig.height=10, warning = FALSE}
 #| echo: false
@@ -157,7 +159,7 @@ ggplot(PL_Data, aes(x = Goals_Against_Per_Match, y = Final_Points)) +
 
 # Model 1: Simple Linear Regression
 
-First wanted to create a simple linear regression model to:
+First wanted to create a simple linear regression model for:
 
 1.  Simplicity
 2.  Baseline Comparison
@@ -211,9 +213,9 @@ kable(tidy_simple_model, digits = 3, caption = "Simple Linear Regression Results
 |:------------------------|:-----------|
 | Residual Standard Error | 6.664      |
 | Multiple R-squared      | 0.865      |
-| Adjusted R-squared      | 0.863      |
-| F-statistic             | 473.4      |
 | p-value                 | \< 2.2e-16 |
+| F-statistic             | 473.4      |
+|                         |            |
 
 # Model 2: Multiple Linear Regression
 
@@ -321,7 +323,7 @@ The inputs were standardized so an interpration if the
     prevented data leakage across seasons, ensuring a more robust model
     evaluation.
 
-# M3 Findings Cont. 
+# M3 Findings Cont.
 
 -   **Performance**: With an average error of about 4 points per team
     per season, the LASSO model offers reliable predictions while
@@ -394,7 +396,7 @@ For a mid-table team with:
 
     -   Comparative analysis with other top European leagues
 
-# Future Works Cont. 
+# Future Works Cont.
 
 -   **Advanced Modeling**:
 

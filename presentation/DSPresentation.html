@@ -379,6 +379,7 @@ By: Daniel and Aiden
 
 <section id="variable-correlations" class="title-slide slide level1 center">
 <h1>Variable Correlations</h1>
+<p>These insights support our variable choices for regression models.</p>
 
 <img data-src="DSPresentation_files/figure-revealjs/Correlation%20Matrix-1.png" width="960" class="r-stretch"></section>
 
@@ -409,7 +410,7 @@ By: Daniel and Aiden
 
 <section id="model-1-simple-linear-regression" class="title-slide slide level1 center">
 <h1>Model 1: Simple Linear Regression</h1>
-<p>First wanted to create a simple linear regression model to:</p>
+<p>First wanted to create a simple linear regression model for:</p>
 <ol type="1">
 <li>Simplicity</li>
 <li>Baseline Comparison</li>
@@ -490,16 +491,16 @@ F-statistic: 473.4 on 1 and 74 DF,  p-value: &lt; 2.2e-16</code></pre>
 <td style="text-align: left;">0.865</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Adjusted R-squared</td>
-<td style="text-align: left;">0.863</td>
+<td style="text-align: left;">p-value</td>
+<td style="text-align: left;">&lt; 2.2e-16</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">F-statistic</td>
 <td style="text-align: left;">473.4</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">p-value</td>
-<td style="text-align: left;">&lt; 2.2e-16</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
 </tr>
 </tbody>
 </table>
@@ -954,80 +955,42 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
       });
     </script>
     
-
     <script>
-
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
       // slide changes (different for each slide format).
-
       (function () {
-
         // dispatch for htmlwidgets
-
         function fireSlideEnter() {
-
           const event = window.document.createEvent("Event");
-
           event.initEvent("slideenter", true, true);
-
           window.document.dispatchEvent(event);
-
         }
-
-    
 
         function fireSlideChanged(previousSlide, currentSlide) {
-
           fireSlideEnter();
 
-    
-
           // dispatch for shiny
-
           if (window.jQuery) {
-
             if (previousSlide) {
-
               window.jQuery(previousSlide).trigger("hidden");
-
             }
-
             if (currentSlide) {
-
               window.jQuery(currentSlide).trigger("shown");
-
             }
-
           }
-
         }
-
-    
 
         // hookup for slidy
-
         if (window.w3c_slidy) {
-
           window.w3c_slidy.add_observer(function (slide_num) {
-
             // slide_num starts at position 1
-
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
           });
-
         }
 
-    
-
       })();
-
     </script>
-
-    
 
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
