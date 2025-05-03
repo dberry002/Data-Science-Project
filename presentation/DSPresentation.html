@@ -521,7 +521,7 @@ F-statistic: 473.4 on 1 and 74 DF,  p-value: &lt; 2.2e-16</code></pre>
 <table class="caption-top">
 <thead>
 <tr class="header">
-<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">Metric - Diff, GA, WP</th>
 <th style="text-align: left;">Value</th>
 </tr>
 </thead>
@@ -551,8 +551,8 @@ F-statistic: 473.4 on 1 and 74 DF,  p-value: &lt; 2.2e-16</code></pre>
 <td style="text-align: left;">0.92</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">RMSE (test set)</td>
-<td style="text-align: left;">5.79</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
 </tr>
 </tbody>
 </table>
@@ -957,80 +957,42 @@ Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
       });
     </script>
     
-
     <script>
-
       // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
       // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
       // slide changes (different for each slide format).
-
       (function () {
-
         // dispatch for htmlwidgets
-
         function fireSlideEnter() {
-
           const event = window.document.createEvent("Event");
-
           event.initEvent("slideenter", true, true);
-
           window.document.dispatchEvent(event);
-
         }
-
-    
 
         function fireSlideChanged(previousSlide, currentSlide) {
-
           fireSlideEnter();
 
-    
-
           // dispatch for shiny
-
           if (window.jQuery) {
-
             if (previousSlide) {
-
               window.jQuery(previousSlide).trigger("hidden");
-
             }
-
             if (currentSlide) {
-
               window.jQuery(currentSlide).trigger("shown");
-
             }
-
           }
-
         }
-
-    
 
         // hookup for slidy
-
         if (window.w3c_slidy) {
-
           window.w3c_slidy.add_observer(function (slide_num) {
-
             // slide_num starts at position 1
-
             fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
           });
-
         }
 
-    
-
       })();
-
     </script>
-
-    
 
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {

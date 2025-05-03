@@ -1,0 +1,439 @@
+---
+title: "Preliminary Analysis"
+author: "Aiden Santoro and Daniel Berry"
+date: "April 17, 2025"
+format: pdf
+---
+
+## Final Report 
+
+## Introduction and Data
+
+```{r Reading In Data, message=FALSE, warning=FALSE}
+library(readr)
+library(ggcorrplot)
+library(dplyr)
+library(caret)      
+library(Metrics)      
+library(ggplot2)
+
+
+PL_Data <- read_csv("PL_data.csv")
+head(PL_Data)
+```
+
+### Research Question
+
+Can a team's performance metrics after the first half of the English Premier League season reliably predict their final standings?
+
+### Background and Motivation
+
+The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome. There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season. By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.
+
+### Data Description
+
+**Source**: <https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/19/>
+
+**Collection Method**: We manually copied the data into an excel file where we performed feature engineering in order to create new variables that would better the performance of our models in the future. From there after cleaning and formatting the data table we saved it as a csv and uploaded it into RStudio.
+
+-   **Variables**:
+    -   **Outcome Variable**: `Final_Points` (total points at the end of the season).
+    -   **Explanatory Variables** (All from first half of respective season):
+        -   Please view the code book to view each variable and its description.
+
+### Data Wrangling:
+
+**Initial Problems:**
+
+We came across an initial problem of finding a multiple data sets that would allow us to move further with our research questions. More specifically:
+
+1.  We will be going back many years so data sets change from year to year and what they offer will also change. In more recent years there are more in-depth tables describing the league while in years like 2015 they aren't as descriptive.
+
+    1.  **Solution:** We are going to bring the years being used for the training data to more present seasons. Starting from the 2019-2020 season until the 2023-2024 will give us a good amount of data in order to accurately predict the final standings.
+
+2.  We originally said 15 games but it makes more sense to just do halfway through the season which is 19 games and this data seems to be more readily available.
+
+    1.  **Solution:** We were able to find data tables online that give information halfway through the season for each year we are going to use.
+
+**Data Cleaning and Variable Creation**
+
+For these specific data sets there was no missing information but there were a few things we had to add and change. First off, to pull these data sets into RStudio we copied them into excel, saved them as a csv file, and then uploaded them to our qmd file.
+
+1.  Getting rid of the logo column. There was a column in the data set that just consisted of the logo for each team so we deleted that.
+2.  Changed Column names to something more readable. For example, Goal differentials was taken down in this format originally: 48:22, meaning a team scored 48 and let in 22 goals. We changed it to two different columns GF and GA that has the first number in GF and the second number in GA. Then in a column name Diff we have the differential of those two.
+3.  We added a few numerical columns to make our data more specific. These include the GF, GA, GPM, and GAPM, Win%, Loss%, Goals_by_Win, GCBW, and ADR.
+4.  Also we will add a categorical column to categorize teams into either: Aggressive, Dominant, Under performers, and Defensive, based on their GF and GA.
+5.  Finally we added a Final_Points column that has each teams point total after the season is done. This will be useful in comparing our predictions to the actual final outcomes.
+
+## Methodology
+
+### Approach
+
+-   **Exploratory Data Analysis (EDA)**:
+    -   Numerous insights can be drawn from our brief analysis. Firstly, the heat map displayed how a teams performance in the first half of the season is quite similar to that of the second half. This can be inferred as many different variables all had a high correlation with the end of season points. Next, the distribution of team performance is quite variable. Both shown through the summary statistics table and the win percentage distribution graph, the club's performance data were quite spread out with few of them remaining close to the average. So, in this league there can be pure dominance and utter failure rather than most teams simply performing at the average. Finally defensive teams perform a little better than aggressive teams as conceding less goals seems to be more important that scoring goals.
+-   **Statistical Modeling**: Two Models to quantify the relationship between explanatory variables and `Final_Points`.
+-   **Validation**: Cross-validation to assess model performance.
+
+### Key Visualizations (Reuse from EDA)
+
+```{r Column Renaming}
+# We want to make sure an audience that is not familiar with sports/soccer terms understand what are variables stand for. So renaming the columns is good practice to do this:
+
+PL_Data <- PL_Data %>%
+  rename(Differential = Dif, Goals_For = GF, Goals_Against = GA, Goals_Per_Match = GPM, Goals_Against_Per_Match = GAPM, Attack_Defense_Ratio = ADR, Goals_Against_By_Wins = GCBW)
+
+
+```
+
+```{r Correlation Matrix, fig.width=7, fig.height=7, warning = FALSE}
+
+correlation_matrix <- cor(PL_Data %>% select(
+  Final_Points, Points, W, L, D, Goals_For, Goals_Against,
+  Differential, Goals_Per_Match, Goals_Against_Per_Match,
+  Attack_Defense_Ratio, Goals_Against_By_Wins, Goals_by_Win
+))
+
+ggcorrplot(
+  correlation_matrix,
+  lab = TRUE,
+  type = "lower",
+  lab_size = 3.5,
+  tl.cex = 10,
+  tl.srt = 45,           # Rotate text
+  colors = c("blue", "white", "red"),
+  ggtheme = theme_minimal()
+) +
+  labs(
+    title = "Heatmap of Midseason Metrics and Final Points",
+    subtitle = "Red: strong positive correlation; Blue: strong negative correlation"
+  ) +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 10)
+  )
+
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+
+# Convert correlation matrix into long format
+cor_table <- as.data.frame(as.table(correlation_matrix)) %>%
+  rename(
+    Variable1 = Var1,
+    Variable2 = Var2,
+    Correlation = Freq
+  ) %>%
+  filter(Variable1 != Variable2)  
+
+cor_table <- cor_table %>%
+  mutate(Correlation = round(Correlation, 2))
+
+print(cor_table)
+
+
+```
+
+The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points It clearly shows that goal differential (Dif), midseason points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.
+
+```{r}
+ggplot(PL_Data, aes(x = Goals_Against_Per_Match, y = Final_Points)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Points vs. Goals Against Per Match",
+       x = "Goals Against Per Match (GPM)",
+       y = "Points") +
+  theme_minimal()
+```
+
+The scatter plot comparing Goals Against Per Match (GAPM) with Final_Points shows a clear negative relationship. As GAPM increases—meaning teams are conceding more goals per match—their final point totals tend to decrease. This trend is reinforced by the red linear regression line, which slopes downward, suggesting a strong negative association between defensive performance and season success. This visualization supports the conclusion that solid defensive metrics midway through the season are strong indicators of how a team will perform overall. As such, GAPM is a valuable explanatory variable to include in predictive models for final standings.
+
+Based on the heat map, we selected variables for our linear regression model that showed the strongest correlations with Final_Points. Goal Differential (Diff) had the highest positive correlation, making it a clear choice. Goals Against (GA) showed a strong negative correlation, reinforcing the importance of defensive performance. Additionally, Win_Percentage captured match-level success and also demonstrated a strong positive relationship with final outcomes. These variables were chosen not only for their statistical relationship but also for their interpretability in a soccer performance context.
+
+## Model 1: Simple Linear Regression
+
+We created this simple linear regression model using only goal differential (Diff) to serve as a baseline. It allows us to evaluate the individual predictive strength of one key variable and compare it to more complex models with multiple predictors. The goal is to assess how much additional accuracy is gained by incorporating other performance metrics like Goals Against and Win Percentage.
+
+```{r}
+# Target variable
+y <- PL_Data$Final_Points
+
+# Predictors
+X <- PL_Data[, c("Differential", "Goals_Against", "Win_Percentage")]
+
+# Combine X and y into one data frame
+df_model <- data.frame(Final_Points = y, X)
+
+# Split into training and testing sets (75% train, 25% test)
+set.seed(42)
+train_index <- createDataPartition(df_model$Final_Points, p = 0.75, list = FALSE)
+train_data <- df_model[train_index, ]
+test_data <- df_model[-train_index, ]
+
+# Simple linear regression
+simple_model <- lm(Final_Points ~ Differential, data = train_data)
+summary(simple_model)
+
+```
+
+## Model 2: Multiple Linear Regression
+
+```{r}
+library(caret)      
+library(Metrics) 
+# Fit linear regression model
+model <- lm(Final_Points ~ Differential + Goals_Against + Win_Percentage, data = train_data)
+
+
+summary(model)
+
+# Predict on test data
+predictions <- predict(model, newdata = test_data)
+
+r2 <- R2(predictions, test_data$Final_Points)
+rmse_val <- rmse(test_data$Final_Points, predictions)
+
+cat("R² Score:", round(r2, 3), "\n")
+cat("RMSE:", round(rmse_val, 2), "\n")
+
+
+```
+
+```{r}
+
+# training control with 10-fold CV
+train_control <- trainControl(method = "cv", number = 10)
+
+# Cross-Validation
+cv_model <- train(
+  Final_Points ~ Differential + Goals_Against + Win_Percentage,
+  data = df_model,
+  method = "lm",
+  trControl = train_control
+)
+
+print(cv_model)
+
+```
+
+```{r}
+plot(model, which = 1)  # Residuals vs Fitted
+```
+
+### Justification for Methods
+
+We used multiple linear regression to predict a team’s final point total because the outcome variable, Final_Points, is continuous and numerical. Our exploratory analysis showed strong linear relationships between key mid season performance metrics—such as Goal Differential, Goals Against, and Win Percentage—and final standings. Multiple linear regression allowed us to model the combined effect of these variables while maintaining interpretability, enabling us to quantify how each factor contributes to a team's overall success. This method also served as a strong baseline for future comparisons with more complex models.
+
+Along with this, we created a simple linear model before it so we could compare how adding more variables can increase the model’s predictive power. In this case, when comparing the two, the multiple regression model clearly outperforms the single-variable model. While the simple model using only goal differential (Diff) explained about 86.5% of the variance in final point totals, the multiple regression model—which also included Goals Against (GA) and Win_Percentage—explained over 93% of the variance and achieved a lower RMSE. This demonstrates that incorporating multiple relevant performance metrics provides a more accurate and reliable prediction of team success, highlighting the value of a multivariate approach.
+
+## Model 3: LASSO Regression for Feature Importance
+
+Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression. Finally I want to note that we ran this LASSO model before with the inclusion of the Points column and it dominated the feature importance, downweighting a lot of the other features present. So for our actual analysis we excluded it to make insights about other important variables that can provide insights about a club's performance.
+
+```{python, warning=FALSE}
+# Loading packages in
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_transformer
+from sklearn.model_selection import cross_validate, GroupKFold
+from sklearn.linear_model import LinearRegression, RidgeCV, ElasticNetCV
+
+
+# reading in csv
+PL_data = pd.read_csv("PL_data.csv")
+
+# dropping nan and irrelevant cols
+PL_data = PL_data.drop(columns=['Pos','#']) 
+#defining y var
+y = PL_data['Final_Points']
+
+# identifying cat col
+categorical_features = ['team_category'] 
+
+# defining x var
+X = PL_data.drop(columns=['Final_Points','Season','Team','Points'])  
+
+#initializing GroupKFold
+group_kfold = GroupKFold(n_splits=5)
+
+# initializing preprocessor
+preprocessor = make_column_transformer(
+    (OneHotEncoder(), categorical_features),
+    (StandardScaler(), X.select_dtypes(include=np.number).columns)
+)
+
+# initializing pipeline function 
+def make_pipeline(estimator):
+    return Pipeline([
+        ('preprocessor', preprocessor),
+        ('estimator', estimator)
+    ])
+    
+# Creating the Lasso Pipeline
+lasso_pipe = make_pipeline(ElasticNetCV(alphas=np.logspace(-3, 3, 100), l1_ratio=1, max_iter=20000))
+
+# writing the function for cv
+def cv_model(pipeline):
+    cv_mod = cross_validate(
+        estimator=pipeline,
+        X=X,
+        y=y,
+        cv=group_kfold,
+        groups = PL_data['Season'],
+        scoring='neg_mean_squared_error',
+        return_estimator=True,
+        n_jobs=1
+    )
+    return cv_mod
+
+cv_lasso = cv_model(lasso_pipe)
+
+
+#example of test score output for OLS
+print(cv_lasso['test_score'])
+
+```
+
+```{python, warning=FALSE}
+cv_lasso = cv_model(lasso_pipe)
+
+mse_lasso = cv_lasso['test_score'].mean()
+```
+
+Average MSE for the models
+
+```{python}
+mse_lasso = cv_lasso['test_score'].mean()
+print(mse_lasso)
+```
+
+Since we are predicting total season points, this implies that the average for our LASSO model's predictions are off by about 4 points per season.
+
+Now we will build a DF to specifically show the importance of each of these features.
+
+```{python}
+
+pd.set_option('display.max_columns', None) 
+
+numeric_features = ['M', 'W', 'D', 'L', 'GF', 'GA', 'Dif', 'Goals_Per_Match', 'Goals_Against_Per_Match',
+    'Win_Percentage', 'Loss_Percentage', 'Draw_Percentage', 
+    'Goals_by_Win', 'GCBW', 'ADR']
+                   
+team_cat__features = ['team_category_Aggressive', 'team_category_Defensive', 'team_category_Dominant', 'team_category_Underperformers']
+
+feature_names = team_cat__features + numeric_features
+
+
+coef_df = pd.DataFrame(
+    [model['estimator'].coef_ for model in cv_lasso['estimator']],
+    columns=feature_names
+)
+coef_df.head()
+
+```
+
+As seen from above a bunch of the less important features get zero'd out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than ADR.
+
+```{python}
+plt.figure(figsize=(12, 6))
+sns.stripplot(
+    data=coef_df
+)
+
+#added a reference line
+plt.axhline(0, color='red', linestyle='--', linewidth=1)
+#added title and axis
+plt.title('LASSO Coefs for each fold', fontsize=14)
+plt.xlabel('Features', fontsize=12)
+plt.ylabel('Coefficient Value', fontsize=12)
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.show()
+```
+
+From this strip plot it becomes clear that Wins and Losses do the best job at predicting the end of season points. However it is not quite clear what is the next best.
+
+We will now find the top 10 features
+
+```{python}
+mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
+mean_coefs.head(10)  
+```
+
+Though first half of the season points were by far the best predictors, stats like Wins, Losses, ADR, and Goals Against are also quite predictive as well.
+
+Now lets look at which features were zero'd out the least
+
+```{python}
+non_zero_counts = (coef_df != 0).sum()
+non_zero_counts.sort_values(ascending=False).head(5)
+```
+
+## Results
+
+### Statistical Models
+
+-   **Model 1**: Simple linear regression of `Final_Points` on `Diff`.
+    -   Equation: `Final_Points = a + b * Diff`.
+    -   Interpretation: For every unit increase in `Diff`, `Final_Points` increases by `b`.
+-   **Model 2**: Multiple regression including `GF`, `GA`, and `Win_Percentage`.
+    -   Assess which variables are most predictive.
+-   **Model 3**: LASSO regression
+    -   Assess which features are the best/worst at predicting Final_Points.
+
+### Key Findings of Multiple Linear Regression Model
+
+To evaluate the performance of our multiple linear regression model predicting Final_Points, we used two complementary validation techniques: a traditional train/test split and 10-fold cross-validation.
+
+We first applied a 75/25 train/test split, where the model was trained on 75% of the data and tested on the remaining 25%. This allowed us to assess how well the model performs on a single, unseen subset of data. From this approach, we achieved an R² score of 0.92 and an RMSE of 5.79, indicating a strong fit but still subject to the randomness of one specific split.
+
+To obtain a more robust and generalizable assessment, we also performed 10-fold cross-validation. This method divides the dataset into 10 parts, training the model on 9 and testing on the 1 remaining fold, repeating the process 10 times. The performance metrics are then averaged across all folds. This approach yielded an even stronger result, with an R² of 0.936 and an RMSE of 5.10.
+
+Using both techniques allowed us to compare the model’s performance on a specific split versus its average performance across multiple random splits. The cross-validation results suggest that the model performs consistently well across different subsets of the data and is unlikely to be overfitting to a particular sample. This enhances our confidence in the model’s reliability and predictive strength when applied to new data.
+
+The following is the multiple regression formula:
+
+**Final_Points = 37.39 + 0.31 × Diff – 0.31 × GA + 60.34 × Win_Percentage**
+
+We applied this formula to a team that had the following stats halfway through the season:
+
+-   Goal Differential (Diff) = 6
+
+-   Goals Against (GA) = 27
+
+-   Win Percentage (Win_Percentage) = 0.526 (i.e., won 10 of 19 matches)
+
+Plugging these into the formula we predict that the team will finish around 62.61 points which is only 3.4 points off there actual final points which was 66. This example reinforces the model’s strength in using early-season metrics to make accurate and interpretable end-of-season predictions.
+
+### Key Findings from the LASSO Model
+
+The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was Wins and Losses. These predictors confirmed that a team's performance during the season is the most reliable factor for how they finish. Other factors like ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 18.5, which implies the predictions were off by 4 points per season.
+
+## Discussion
+
+This project set out to answer the question: Can a team’s midseason performance metrics reliably predict their final point total in the English Premier League? Based on our statistical analysis and multiple linear regression model, the answer is yes — midseason indicators such as goal differential, goals against, and win percentage showed strong predictive power. Our final model achieved an R² of 0.936 with a root mean squared error of 5.10, meaning it could predict final point totals with impressive accuracy using only a few simple inputs.
+
+From a methodological standpoint, we selected variables based on exploratory visualizations and correlation analysis. The stepwise comparison between the simple and multiple linear regression models demonstrated that including more meaningful variables significantly improved predictive accuracy. In terms of validation, we used both a 75/25 train-test split and 10-fold cross-validation, allowing us to compare performance under different scenarios. Cross-validation provided a more reliable assessment of model generalizability and gave us greater confidence in the robustness of our findings.
+
+Then for the LASSO model the findings follow suit. While current performance is the best predictor, defensive weakness significantly influences outcomes as well. Honing in on minimizing how many goals are scored on your club could prove to be helpful in boosting end of season points. Additionally while LASSO's feature selection simplifies the model, excluded variables like Win Percentage can still be a great predictor in the multiple regression.
+
+Both modelling approaches show that mid-season performance strongly predicts final standings. The multiple regression quantifies how metrics like win percent drive success, while LASSO isolated the most impactful factors (such as showing defensive strength is crucial for maximizing points). This dual perspective can lead to actionable insight that tracking core performance provides reliable forecasts, but defensive improvements can produce rewarding outcomes.
+
+### Limitations
+
+-   **Data Scope**: Limited to 5 seasons; may not capture long-term trends or anomalies.
+-   **Generalization**: Findings may not apply to other leagues with different competitive dynamics.
+-   **Future Years:** the model may not generalize perfectly to future seasons due to external factors.
+
+### Future Work
+
+-   Include more seasons or leagues to validate findings.
+-   Explore more advanced models (e.g., machine learning) for non-linear relationships.
+-   Investigate the impact of external factors (e.g., injuries, managerial changes).

@@ -227,7 +227,7 @@ Next we wanted to use a multiple linear regression model to:
 
 # Model Summary:
 
-| Metric                  | Value              |
+| Metric - Diff, GA, WP   | Value              |
 |:------------------------|:-------------------|
 | Residual Standard Error | 4.803              |
 | Multiple R-squared      | 0.932              |
@@ -235,7 +235,7 @@ Next we wanted to use a multiple linear regression model to:
 | F-statistic             | 327.3 (df = 3, 72) |
 | p-value                 | \< 2.2e-16         |
 | R² Score (test set)     | 0.92               |
-| RMSE (test set)         | 5.79               |
+|                         |                    |
 
 ```{r}
 #| echo: false
