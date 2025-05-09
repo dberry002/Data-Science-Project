@@ -2,7 +2,7 @@
 title: "Final Report"
 author: "Aiden Santoro and Daniel Berry"
 date: "April 17, 2025"
-format: pdf
+format: html
 ---
 
 ## Final Report 
@@ -74,7 +74,7 @@ For these specific data sets there was no missing information but there were a f
 
 -   **Exploratory Data Analysis (EDA)**:
     -   Numerous insights can be drawn from our brief analysis. Firstly, the heat map displayed how a teams performance in the first half of the season is quite similar to that of the second half. This can be inferred as many different variables all had a high correlation with the end of season points. Next, the distribution of team performance is quite variable. Both shown through the summary statistics table and the win percentage distribution graph, the club's performance data were quite spread out with few of them remaining close to the average. So, in this league there can be pure dominance and utter failure rather than most teams simply performing at the average. Finally defensive teams perform a little better than aggressive teams as conceding less goals seems to be more important that scoring goals.
--   **Statistical Modeling**: Two Models to quantify the relationship between explanatory variables and `Final_Points`.
+-   **Statistical Modeling**: Three Models to quantify the relationship between explanatory variables and `Final_Points`.
 -   **Validation**: Cross-validation to assess model performance.
 
 ### Key Visualizations (Reuse from EDA)
@@ -124,7 +124,7 @@ ggcorrplot(
 
 ```
 
-The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points It clearly shows that goal differential (Dif), mid season points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.
+The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points. It clearly shows that goal differential (Dif), mid season points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.
 
 ```{r Scatter Plot}
 #| echo: false
@@ -225,7 +225,7 @@ Along with this, we created a simple linear model before it so we could compare 
 
 ## Model 3: LASSO Regression for Feature Importance
 
-Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero. So the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression. Finally I want to note that we ran this LASSO model before with the inclusion of the Points column and it dominated the feature importance, downweighting a lot of the other features present. So for our actual analysis we excluded it to make insights about other important variables that can provide insights about a club's performance.
+Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero, so the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression. Finally I want to note that we ran this LASSO model before with the inclusion of the Points column and it dominated the feature importance, downweighting a lot of the other features present. So for our actual analysis we excluded it to make insights about other important variables that can provide more specific findings about a club's performance.
 
 ```{python LASSO Regression, warning=FALSE}
 #| echo: false
@@ -291,11 +291,6 @@ def cv_model(pipeline):
     return cv_mod
 
 cv_lasso = cv_model(lasso_pipe)
-
-
-#example of test score output for OLS
-print(cv_lasso['test_score'])
-
 ```
 
 ```{python Test Score, warning=FALSE}
@@ -307,7 +302,7 @@ cv_lasso = cv_model(lasso_pipe)
 mse_lasso = cv_lasso['test_score'].mean()
 ```
 
-Average MSE for the models
+Average MSE across all folds:
 
 ```{python Average MSE}
 #| echo: false
@@ -317,9 +312,7 @@ mse_lasso = cv_lasso['test_score'].mean()
 print(mse_lasso)
 ```
 
-Since we are predicting total season points, this implies that the average for our LASSO model's predictions are off by about 4 points per season.
-
-Now we will build a DF to specifically show the importance of each of these features.
+Since we are predicting total season points, this implies that the average performance for our LASSO model's predictions are off by about 4 points per season.
 
 ```{python Feature Importance}
 #| echo: false
@@ -340,11 +333,9 @@ coef_df = pd.DataFrame(
     [model['estimator'].coef_ for model in cv_lasso['estimator']],
     columns=feature_names
 )
-coef_df.head()
-
 ```
 
-As seen from above a bunch of the less important features get zero'd out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than ADR.
+Now that we have seen that our model performance is quite good, lets see which features were the most predictive. To do this we will create a strip plot.
 
 ```{python LASSO Coefs}
 #| echo: false
@@ -366,10 +357,10 @@ plt.tight_layout()
 plt.show()
 ```
 
-From this strip plot it becomes clear that Wins and Losses do the best job at predicting the end of season points. However it is not quite clear what is the next best.
+As seen from above a bunch of the less important features get zero'd out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than Wins. From this strip plot it becomes clear that Wins and Losses do the best job at predicting the end of season points. However it is not quite clear what is the next best.
 
-We will now find the top 10 features
 
+We will now find the top 10 features:
 ```{python Top 10 Features}
 #| echo: false
 #| message: false
@@ -378,10 +369,9 @@ mean_coefs = coef_df.abs().mean().sort_values(ascending=False)
 mean_coefs.head(10)  
 ```
 
-Though first half of the season points were by far the best predictors, stats like Wins, Losses, ADR, and Goals Against are also quite predictive as well.
+Though Wins and Losses were by far the best predictors, stats like ADR, GA, and Dif are also quite predictive as well.
 
-Now lets look at which features were zero'd out the least
-
+Now lets look at which features were zero'd out the least to cross reference with the variables that had the highest average feature importance. 
 ```{python Zeroed out features}
 #| echo: false
 #| message: false
@@ -432,7 +422,7 @@ The LASSO model identified the most significant predictors of Final League stand
 
 ## Discussion
 
-This project set out to answer the question: Can a team’s midseason performance metrics reliably predict their final point total in the English Premier League? Based on our statistical analysis and multiple linear regression model, the answer is yes — midseason indicators such as goal differential, goals against, and win percentage showed strong predictive power. Our final model achieved an R² of 0.936 with a root mean squared error of 5.10, meaning it could predict final point totals with impressive accuracy using only a few simple inputs.
+This project set out to answer the question: Can a team’s midseason performance metrics reliably predict their final point total in the English Premier League? Based on our statistical analysis and multiple linear regression model, the answer is yes — midseason indicators such as goal differential, goals against, and win percentage showed strong predictive power. Our multiple linear regression model achieved an R² of 0.936 with a root mean squared error of 5.10, meaning it could predict final point totals with impressive accuracy using only a few simple inputs.
 
 From a methodological standpoint, we selected variables based on exploratory visualizations and correlation analysis. The stepwise comparison between the simple and multiple linear regression models demonstrated that including more meaningful variables significantly improved predictive accuracy. In terms of validation, we used both a 75/25 train-test split and 10-fold cross-validation, allowing us to compare performance under different scenarios. Cross-validation provided a more reliable assessment of model generalizability and gave us greater confidence in the robustness of our findings.
 

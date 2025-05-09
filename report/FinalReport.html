@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Aiden Santoro and Daniel Berry">
+<meta name="dcterms.date" content="2025-04-17">
+
+<title>Final Report</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="FinalReport_files/libs/clipboard/clipboard.min.js"></script>
+<script src="FinalReport_files/libs/quarto-html/quarto.js"></script>
+<script src="FinalReport_files/libs/quarto-html/popper.min.js"></script>
+<script src="FinalReport_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="FinalReport_files/libs/quarto-html/anchor.min.js"></script>
+<link href="FinalReport_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="FinalReport_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="FinalReport_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="FinalReport_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="FinalReport_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Final Report</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Aiden Santoro and Daniel Berry </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 17, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="final-report" class="level2">
+<h2 class="anchored" data-anchor-id="final-report">Final Report</h2>
+</section>
+<section id="introduction-and-data" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-and-data">Introduction and Data</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 22
+    Pos Team            M     W     D     L    GF    GA   Dif Points   GPM  GAPM
+  &lt;dbl&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1     1 Liverpool …    19    18     1     0    48    14    34     55  2.53  0.74
+2     2 Leicester …    19    12     3     4    41    18    23     39  2.16  0.95
+3     3 Manchester…    19    12     2     5    52    23    29     38  2.74  1.21
+4     4 Chelsea FC     19    10     2     7    33    27     6     32  1.74  1.42
+5     5 Wolverhamp…    19     7     9     3    29    24     5     30  1.53  1.26
+6     6 Tottenham …    19     8     5     6    34    27     7     29  1.79  1.42
+# ℹ 10 more variables: Final_Points &lt;dbl&gt;, Season &lt;chr&gt;, `#` &lt;dbl&gt;,
+#   Win_Percentage &lt;dbl&gt;, Loss_Percentage &lt;dbl&gt;, Draw_Percentage &lt;dbl&gt;,
+#   Goals_by_Win &lt;dbl&gt;, GCBW &lt;dbl&gt;, ADR &lt;dbl&gt;, team_category &lt;chr&gt;</code></pre>
+</div>
+</div>
+<section id="research-question" class="level3">
+<h3 class="anchored" data-anchor-id="research-question">Research Question</h3>
+<p>Can a team’s performance metrics after the first half of the English Premier League season reliably predict their final standings?</p>
+</section>
+<section id="background-and-motivation" class="level3">
+<h3 class="anchored" data-anchor-id="background-and-motivation">Background and Motivation</h3>
+<p>The English Premier League is one of the most competitive soccer leagues globally, with performance in the first half of the season often indicative of final standings. By understanding these relationships this report can help teams, analysts, and fans make mid-season predictions and strategic adjustments to ensure their desired outcome. There have been many similar studies that state early seasons performance metrics are strong predictors to end of season standings, but the relationships can vary a lot per league and season. By looking at multiple seasons for the English Premier League this report aims to build a more comprehensive understanding of performance indicators on seasonal outcomes that can be generalized for each year.</p>
+</section>
+<section id="data-description" class="level3">
+<h3 class="anchored" data-anchor-id="data-description">Data Description</h3>
+<p><strong>Source</strong>: <a href="https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/19/" class="uri">https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/19/</a></p>
+<p><strong>Collection Method</strong>: We manually copied the data into an excel file where we performed feature engineering in order to create new variables that would better the performance of our models in the future. From there after cleaning and formatting the data table we saved it as a csv and uploaded it into RStudio.</p>
+<ul>
+<li><strong>Variables</strong>:
+<ul>
+<li><strong>Outcome Variable</strong>: <code>Final_Points</code> (total points at the end of the season).</li>
+<li><strong>Explanatory Variables</strong> (All from first half of respective season):
+<ul>
+<li>Please view the code book to view each variable and its description.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="data-wrangling" class="level3">
+<h3 class="anchored" data-anchor-id="data-wrangling">Data Wrangling:</h3>
+<p><strong>Initial Problems:</strong></p>
+<p>We came across an initial problem of finding a multiple data sets that would allow us to move further with our research questions. More specifically:</p>
+<ol type="1">
+<li><p>We will be going back many years so data sets change from year to year and what they offer will also change. In more recent years there are more in-depth tables describing the league while in years like 2015 they aren’t as descriptive.</p>
+<ol type="1">
+<li><strong>Solution:</strong> We are going to bring the years being used for the training data to more present seasons. Starting from the 2019-2020 season until the 2023-2024 will give us a good amount of data in order to accurately predict the final standings.</li>
+</ol></li>
+<li><p>We originally said 15 games but it makes more sense to just do halfway through the season which is 19 games and this data seems to be more readily available.</p>
+<ol type="1">
+<li><strong>Solution:</strong> We were able to find data tables online that give information halfway through the season for each year we are going to use.</li>
+</ol></li>
+</ol>
+<p><strong>Data Cleaning and Variable Creation</strong></p>
+<p>For these specific data sets there was no missing information but there were a few things we had to add and change. First off, to pull these data sets into RStudio we copied them into excel, saved them as a csv file, and then uploaded them to our qmd file.</p>
+<ol type="1">
+<li>Getting rid of the logo column. There was a column in the data set that just consisted of the logo for each team so we deleted that.</li>
+<li>Changed Column names to something more readable. For example, Goal differentials was taken down in this format originally: 48:22, meaning a team scored 48 and let in 22 goals. We changed it to two different columns GF and GA that has the first number in GF and the second number in GA. Then in a column name Diff we have the differential of those two.</li>
+<li>We added a few numerical columns to make our data more specific. These include the GF, GA, GPM, and GAPM, Win%, Loss%, Goals_by_Win, GCBW, and ADR.</li>
+<li>Also we will add a categorical column to categorize teams into either: Aggressive, Dominant, Under performers, and Defensive, based on their GF and GA.</li>
+<li>Finally we added a Final_Points column that has each teams point total after the season is done. This will be useful in comparing our predictions to the actual final outcomes.</li>
+</ol>
+</section>
+</section>
+<section id="methodology" class="level2">
+<h2 class="anchored" data-anchor-id="methodology">Methodology</h2>
+<section id="approach" class="level3">
+<h3 class="anchored" data-anchor-id="approach">Approach</h3>
+<ul>
+<li><strong>Exploratory Data Analysis (EDA)</strong>:
+<ul>
+<li>Numerous insights can be drawn from our brief analysis. Firstly, the heat map displayed how a teams performance in the first half of the season is quite similar to that of the second half. This can be inferred as many different variables all had a high correlation with the end of season points. Next, the distribution of team performance is quite variable. Both shown through the summary statistics table and the win percentage distribution graph, the club’s performance data were quite spread out with few of them remaining close to the average. So, in this league there can be pure dominance and utter failure rather than most teams simply performing at the average. Finally defensive teams perform a little better than aggressive teams as conceding less goals seems to be more important that scoring goals.</li>
+</ul></li>
+<li><strong>Statistical Modeling</strong>: Three Models to quantify the relationship between explanatory variables and <code>Final_Points</code>.</li>
+<li><strong>Validation</strong>: Cross-validation to assess model performance.</li>
+</ul>
+</section>
+<section id="key-visualizations-reuse-from-eda" class="level3">
+<h3 class="anchored" data-anchor-id="key-visualizations-reuse-from-eda">Key Visualizations (Reuse from EDA)</h3>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalReport_files/figure-html/Correlation%20Matrix-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The heat map visualization displays the correlation between all major performance variables and the outcome variable, Final Points. It clearly shows that goal differential (Dif), mid season points, and goals against (GA) are highly correlated with final standings. For example, Dif shows a correlation of approximately 0.93 with Final_Points indicating that teams with better goal differentials midway through the season tend to finish with more points. Similarly, GA shows a strong negative correlation, suggesting that strong defensive performance early on is a key driver of final outcomes. This analysis confirms that first-half metrics are not only relevant but highly predictive of season-end performance, providing support for building regression models around these features.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalReport_files/figure-html/Scatter%20Plot-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The scatter plot comparing Goals Against Per Match (GAPM) with Final_Points shows a clear negative relationship. As GAPM increases—meaning teams are conceding more goals per match—their final point totals tend to decrease. This trend is reinforced by the red linear regression line, which slopes downward, suggesting a strong negative association between defensive performance and season success. This visualization supports the conclusion that solid defensive metrics midway through the season are strong indicators of how a team will perform overall. As such, GAPM is a valuable explanatory variable to include in predictive models for final standings.</p>
+<p>Based on the heat map, we selected variables for our linear regression model that showed the strongest correlations with Final_Points. Goal Differential (Diff) had the highest positive correlation, making it a clear choice. Goals Against (GA) showed a strong negative correlation, reinforcing the importance of defensive performance. Additionally, Win_Percentage captured match-level success and also demonstrated a strong positive relationship with final outcomes. These variables were chosen not only for their statistical relationship but also for their interpretability in a soccer performance context.</p>
+</section>
+</section>
+<section id="model-1-simple-linear-regression" class="level2">
+<h2 class="anchored" data-anchor-id="model-1-simple-linear-regression">Model 1: Simple Linear Regression</h2>
+<p>We created this simple linear regression model using only goal differential (Diff) to serve as a baseline. It allows us to evaluate the individual predictive strength of one key variable and compare it to more complex models with multiple predictors. The goal is to assess how much additional accuracy is gained by incorporating other performance metrics like Goals Against and Win Percentage.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Final_Points ~ Differential, data = train_data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-17.7428  -4.5627  -0.6634   4.1808  12.5676 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  52.06270    0.76481   68.07   &lt;2e-16 ***
+Differential  1.09242    0.05021   21.76   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 6.664 on 74 degrees of freedom
+Multiple R-squared:  0.8648,    Adjusted R-squared:  0.863 
+F-statistic: 473.4 on 1 and 74 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="model-2-multiple-linear-regression" class="level2">
+<h2 class="anchored" data-anchor-id="model-2-multiple-linear-regression">Model 2: Multiple Linear Regression</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Final_Points ~ Differential + Goals_Against + Win_Percentage, 
+    data = train_data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.7128  -2.4906   0.1933   2.8244   8.6254 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)     37.3884     4.3500   8.595 1.19e-12 ***
+Differential     0.3114     0.1087   2.866  0.00545 ** 
+Goals_Against   -0.3108     0.1378  -2.255  0.02715 *  
+Win_Percentage  60.3391     7.2390   8.335 3.63e-12 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.803 on 72 degrees of freedom
+Multiple R-squared:  0.9317,    Adjusted R-squared:  0.9288 
+F-statistic: 327.3 on 3 and 72 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>R² Score: 0.92 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>RMSE: 5.79 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear Regression 
+
+100 samples
+  3 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 89, 92, 90, 90, 88, 90, ... 
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  5.096393  0.9364352  3.948435
+
+Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
+</div>
+</div>
+<section id="justification-for-methods" class="level3">
+<h3 class="anchored" data-anchor-id="justification-for-methods">Justification for Methods</h3>
+<p>We used multiple linear regression to predict a team’s final point total because the outcome variable, Final_Points, is continuous and numerical. Our exploratory analysis showed strong linear relationships between key mid season performance metrics—such as Goal Differential, Goals Against, and Win Percentage—and final standings. Multiple linear regression allowed us to model the combined effect of these variables while maintaining interpretability, enabling us to quantify how each factor contributes to a team’s overall success. This method also served as a strong baseline for future comparisons with more complex models.</p>
+<p>Along with this, we created a simple linear model before it so we could compare how adding more variables can increase the model’s predictive power. In this case, when comparing the two, the multiple regression model clearly outperforms the single-variable model. While the simple model using only goal differential (Diff) explained about 86.5% of the variance in final point totals, the multiple regression model—which also included Goals Against (GA) and Win_Percentage—explained over 93% of the variance and achieved a lower RMSE. This demonstrates that incorporating multiple relevant performance metrics provides a more accurate and reliable prediction of team success, highlighting the value of a multivariate approach.</p>
+</section>
+</section>
+<section id="model-3-lasso-regression-for-feature-importance" class="level2">
+<h2 class="anchored" data-anchor-id="model-3-lasso-regression-for-feature-importance">Model 3: LASSO Regression for Feature Importance</h2>
+<p>Given that we saw through previous analysis that a lot of these variables are quite successful in determining end of season performance, we wanted to understand which are the best few. In the code chunk below we are setting up a LASSO regression model. LASSO was selected as it will drive less important coefficients to zero, so the model will automatically select the most predictive features. Also it is good to note that in Premier League seasons that data points are not independent, as performance in one season can influence later ones. So by randomly splitting the data we risk data leakage as future information can influence the model. A GroupKFold is used on the seasons variable to ensure all samples from that season stay together. Using GroupKFold in the LASSO regression was important to avoid data leakage across seasons. Also, since we used ElasticNetCV the model also maintained the linear assumptions inherent to LASSO regression. Finally I want to note that we ran this LASSO model before with the inclusion of the Points column and it dominated the feature importance, downweighting a lot of the other features present. So for our actual analysis we excluded it to make insights about other important variables that can provide more specific findings about a club’s performance.</p>
+<p>Average MSE across all folds:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>-18.482170098042605</code></pre>
+</div>
+</div>
+<p>Since we are predicting total season points, this implies that the average performance for our LASSO model’s predictions are off by about 4 points per season.</p>
+<p>Now that we have seen that our model performance is quite good, lets see which features were the most predictive. To do this we will create a strip plot.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], [Text(0, 0, 'team_category_Aggressive'), Text(1, 0, 'team_category_Defensive'), Text(2, 0, 'team_category_Dominant'), Text(3, 0, 'team_category_Underperformers'), Text(4, 0, 'M'), Text(5, 0, 'W'), Text(6, 0, 'D'), Text(7, 0, 'L'), Text(8, 0, 'GF'), Text(9, 0, 'GA'), Text(10, 0, 'Dif'), Text(11, 0, 'Goals_Per_Match'), Text(12, 0, 'Goals_Against_Per_Match'), Text(13, 0, 'Win_Percentage'), Text(14, 0, 'Loss_Percentage'), Text(15, 0, 'Draw_Percentage'), Text(16, 0, 'Goals_by_Win'), Text(17, 0, 'GCBW'), Text(18, 0, 'ADR')])</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalReport_files/figure-html/LASSO%20Coefs-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As seen from above a bunch of the less important features get zero’d out overtime. So for example Draw_percentage is observed as a significantly less predictive feature than Wins. From this strip plot it becomes clear that Wins and Losses do the best job at predicting the end of season points. However it is not quite clear what is the next best.</p>
+<p>We will now find the top 10 features:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>W                  9.592635
+L                  6.489302
+ADR                1.299359
+GA                 0.491382
+Dif                0.187904
+Goals_Per_Match    0.092940
+GCBW               0.082883
+Win_Percentage     0.071999
+Goals_by_Win       0.028186
+Loss_Percentage    0.014149
+dtype: float64</code></pre>
+</div>
+</div>
+<p>Though Wins and Losses were by far the best predictors, stats like ADR, GA, and Dif are also quite predictive as well.</p>
+<p>Now lets look at which features were zero’d out the least to cross reference with the variables that had the highest average feature importance.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>ADR                5
+W                  5
+Loss_Percentage    5
+Win_Percentage     5
+L                  5
+dtype: int64</code></pre>
+</div>
+</div>
+</section>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<section id="statistical-models" class="level3">
+<h3 class="anchored" data-anchor-id="statistical-models">Statistical Models</h3>
+<ul>
+<li><strong>Model 1</strong>: Simple linear regression of <code>Final_Points</code> on <code>Diff</code>.
+<ul>
+<li>Equation: <code>Final_Points = a + b * Diff</code>.</li>
+<li>Interpretation: For every unit increase in <code>Diff</code>, <code>Final_Points</code> increases by <code>b</code>.</li>
+</ul></li>
+<li><strong>Model 2</strong>: Multiple regression including <code>GF</code>, <code>GA</code>, and <code>Win_Percentage</code>.
+<ul>
+<li>Assess which variables are most predictive.</li>
+</ul></li>
+<li><strong>Model 3</strong>: LASSO regression
+<ul>
+<li>Assess which features are the best/worst at predicting Final_Points.</li>
+</ul></li>
+</ul>
+</section>
+<section id="key-findings-of-multiple-linear-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="key-findings-of-multiple-linear-regression-model">Key Findings of Multiple Linear Regression Model</h3>
+<p>To evaluate the performance of our multiple linear regression model predicting Final_Points, we used two complementary validation techniques: a traditional train/test split and 10-fold cross-validation.</p>
+<p>We first applied a 75/25 train/test split, where the model was trained on 75% of the data and tested on the remaining 25%. This allowed us to assess how well the model performs on a single, unseen subset of data. From this approach, we achieved an R² score of 0.92 and an RMSE of 5.79, indicating a strong fit but still subject to the randomness of one specific split.</p>
+<p>To obtain a more robust and generalizable assessment, we also performed 10-fold cross-validation. This method divides the dataset into 10 parts, training the model on 9 and testing on the 1 remaining fold, repeating the process 10 times. The performance metrics are then averaged across all folds. This approach yielded an even stronger result, with an R² of 0.936 and an RMSE of 5.10.</p>
+<p>Using both techniques allowed us to compare the model’s performance on a specific split versus its average performance across multiple random splits. The cross-validation results suggest that the model performs consistently well across different subsets of the data and is unlikely to be overfitting to a particular sample. This enhances our confidence in the model’s reliability and predictive strength when applied to new data.</p>
+<p>The following is the multiple regression formula:</p>
+<p><strong>Final_Points = 37.39 + 0.31 × Diff – 0.31 × GA + 60.34 × Win_Percentage</strong></p>
+<p>We applied this formula to a team that had the following stats halfway through the season:</p>
+<ul>
+<li><p>Goal Differential (Diff) = 6</p></li>
+<li><p>Goals Against (GA) = 27</p></li>
+<li><p>Win Percentage (Win_Percentage) = 0.526 (i.e., won 10 of 19 matches)</p></li>
+</ul>
+<p>Plugging these into the formula we predict that the team will finish around 62.61 points which is only 3.4 points off there actual final points which was 66. This example reinforces the model’s strength in using early-season metrics to make accurate and interpretable end-of-season predictions.</p>
+</section>
+<section id="key-findings-from-the-lasso-model" class="level3">
+<h3 class="anchored" data-anchor-id="key-findings-from-the-lasso-model">Key Findings from the LASSO Model</h3>
+<p>The LASSO model identified the most significant predictors of Final League standings, while also filtering out the less impactful variables. The strongest predictor, by no surprise, was Wins and Losses. These predictors confirmed that a team’s performance during the season is the most reliable factor for how they finish. Other factors like ADR, and GA highlighted the importance that not letting up goals is more important than scoring them. Interestingly team categories and raw counts like Goals Scored were not as relevant in the LASSO model. The model achieved a MSE of 18.5, which implies the predictions were off by 4 points per season.</p>
+</section>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
+<p>This project set out to answer the question: Can a team’s midseason performance metrics reliably predict their final point total in the English Premier League? Based on our statistical analysis and multiple linear regression model, the answer is yes — midseason indicators such as goal differential, goals against, and win percentage showed strong predictive power. Our multiple linear regression model achieved an R² of 0.936 with a root mean squared error of 5.10, meaning it could predict final point totals with impressive accuracy using only a few simple inputs.</p>
+<p>From a methodological standpoint, we selected variables based on exploratory visualizations and correlation analysis. The stepwise comparison between the simple and multiple linear regression models demonstrated that including more meaningful variables significantly improved predictive accuracy. In terms of validation, we used both a 75/25 train-test split and 10-fold cross-validation, allowing us to compare performance under different scenarios. Cross-validation provided a more reliable assessment of model generalizability and gave us greater confidence in the robustness of our findings.</p>
+<p>Then for the LASSO model the findings follow suit. While current performance is the best predictor, defensive weakness significantly influences outcomes as well. Honing in on minimizing how many goals are scored on your club could prove to be helpful in boosting end of season points. Additionally while LASSO’s feature selection simplifies the model, excluded variables like Win Percentage can still be a great predictor in the multiple regression.</p>
+<p>Both modelling approaches show that mid-season performance strongly predicts final standings. The multiple regression quantifies how metrics like win percent drive success, while LASSO isolated the most impactful factors (such as showing defensive strength is crucial for maximizing points). This dual perspective can lead to actionable insight that tracking core performance provides reliable forecasts, but defensive improvements can produce rewarding outcomes.</p>
+<section id="limitations" class="level3">
+<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
+<ul>
+<li><strong>Data Scope</strong>: Limited to 5 seasons; may not capture long-term trends or anomalies.</li>
+<li><strong>Generalization</strong>: Findings may not apply to other leagues with different competitive dynamics.</li>
+<li><strong>Future Years:</strong> the model may not generalize perfectly to future seasons due to external factors.</li>
+</ul>
+</section>
+<section id="future-work" class="level3">
+<h3 class="anchored" data-anchor-id="future-work">Future Work</h3>
+<ul>
+<li>Include more seasons or leagues to validate findings.</li>
+<li>Explore more advanced models (e.g., machine learning) for non-linear relationships.</li>
+<li>Investigate the impact of external factors (e.g., injuries, managerial changes).</li>
+</ul>
+</section>
+<section id="different-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="different-approaches">Different Approaches</h3>
+<p>A different approach we could have taken is using time-series modeling. Then we would treat each team’s performance over the season as a temporal sequence rather than a single mid season snapshot. For example, we could have used a dynamic regression model to incorporate lagged variables which are past values of predictors to better capture the trends and momentum over time.</p>
+<ul>
+<li><p>For our premier league project we could incorporate this to see the trajectory of performance rather than just season-to-date averages or totals at mid season.</p></li>
+<li><p>This could help capture momentum and trends that static mid season averages miss and can improve prediction for teams with unusual mid season trajectories. Moreover, it will make the model more adaptive to real-world developments like slumps or injuries. However, this approach would require more granular data and a more complex modeling framework.</p></li>
+</ul>
+<p>Overall, a dynamic regression would allow you to model not just how well a team has performed, but how they are trending. This is often crucial in forecasting final outcomes in sports.</p>
+</section>
+<section id="what-we-would-do-differently" class="level3">
+<h3 class="anchored" data-anchor-id="what-we-would-do-differently">What We Would Do Differently</h3>
+<p>If we were to start this project over, one key change we would make is collecting more granular match-level data rather than relying solely on mid season summaries. This would allow us to explore trends in performance over time, such as streaks, form fluctuations, and the impact of specific events like injuries or managerial changes. With this data, we could implement dynamic regression or time-series models that better capture momentum and provide more nuanced predictions. Additionally, we would focus earlier on standardizing our feature engineering process across seasons to ensure full consistency in the variables used. This would have saved time during data cleaning and improved model generalizability. Lastly, we would invest more time in visualizing model residuals and diagnostic plots to evaluate model assumptions more thoroughly and potentially uncover patterns or outliers that merit further investigation.</p>
+</section>
+<section id="answers-to-comments" class="level3">
+<h3 class="anchored" data-anchor-id="answers-to-comments">Answers to Comments</h3>
+<p>One surprising insight we encountered was how consistently strong defensive performance—especially low Goals Against—outperformed offensive metrics like Goals Scored in predicting final points. While we expected overall performance to matter, the relative weight of defensive strength was more pronounced than anticipated. This finding led us to reevaluate common assumptions that high-scoring teams dominate, highlighting instead that preventing goals may be a more reliable strategy for long-term success. We also appreciate your suggestion about using prior seasons’ data for future prediction and agree it would be a compelling extension to test year-over-year consistency and deeper trends.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
